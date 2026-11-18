@@ -4,23 +4,21 @@ import { getNode, getNodeTelemetry, sendCommand } from '../api'
 import { displayName } from '../localNames'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 
+// Variables que se grafican (las que publica el firmware control-luz)
 const sensorConfig = {
-  flame: { label: 'Flame', unit: '', color: '#f39c12', dataKey: 'flame' },
-  temperature: { label: 'Temperature', unit: '°C', color: '#e74c3c', dataKey: 'temperature' },
-  gas: { label: 'Gas (ppm)', unit: 'ppm', color: '#e67e22', dataKey: 'gas' },
+  luz_aula: { label: 'Luz aula', unit: ' lx', color: '#f39c12', dataKey: 'luz_aula' },
+  luz_ventana: { label: 'Luz ventana', unit: ' lx', color: '#e67e22', dataKey: 'luz_ventana' },
+  temp_c: { label: 'Temperatura', unit: '°C', color: '#e74c3c', dataKey: 'temp_c' },
+  humedad: { label: 'Humedad', unit: '%', color: '#3498db', dataKey: 'humedad' },
 }
 
-const statusColors = {
-  'Óptima': '#27ae60',
-  'Advertencia': '#f39c12',
-  'Peligro': '#e74c3c',
-}
-
-const statusKey = {
-  temperature: 'temp_status',
-  gas: 'gas_status',
-  flame: 'flame_status',
-}
+// Comandos que acepta el firmware (ver contrato MQTT en el README principal)
+const comandos = [
+  { cmd: 'RELE_ON', label: 'Prender luz', title: 'Modo manual: prende el relé' },
+  { cmd: 'RELE_OFF', label: 'Apagar luz', title: 'Modo manual: apaga el relé' },
+  { cmd: 'AUTO', label: 'Automático', title: 'Vuelve a la lógica automática' },
+  { cmd: 'REBOOT', label: 'Reiniciar', title: 'Reinicia la placa' },
+]
 
 function formatTime(ts) {
   const d = new Date(ts + 'Z')
@@ -67,55 +65,12 @@ export default function NodeDetail() {
         </div>
 
         <div className="card">
-          <div className="card-title">Send Command</div>
+          <div className="card-title">Comandos</div>
           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-            {['REBOOT', 'BUZZER_ON', 'BUZZER_OFF'].map(c => (
-              <button key={c} className="btn-primary btn-sm" onClick={() => sendCommand(nodeId, c)}>{c}</button>
+            {comandos.map(({ cmd, label, title }) => (
+              <button key={cmd} className="btn-primary btn-sm" title={title}
+                onClick={() => sendCommand(nodeId, cmd).then(fetch).catch(() => {})}>{label}</button>
             ))}
-          </div>
-        </div>
-      </div>
-
-      {last && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24 }}>
-          {Object.entries(sensorConfig).map(([key, cfg]) => {
-            const value = last[key]
-            return (
-              <div className="card" key={key}>
-                <div className="card-title">{cfg.label}</div>
-                <div className="card-value" style={{ color: cfg.color }}>
-                  {value != null ? `${value}${cfg.unit}` : '—'}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
-
-      <div className="detail-grid">
-        <div className="card full">
-          <div className="card-title">Estado actual por sensor</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
-            {Object.entries(sensorConfig).map(([key, cfg]) => {
-              const value = last?.[key]
-              const status = last?.[statusKey[key]]
-              return (
-                <div key={key} className="card" style={{ padding: 12 }}>
-                  <div className="card-title" style={{ color: cfg.color, marginBottom: 8 }}>{cfg.label}</div>
-                  <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>
-                    {value != null ? `${value}${cfg.unit}` : '—'}
-                  </div>
-                  {status && (
-                    <span style={{
-                      display: 'inline-block', marginTop: 6, padding: '2px 10px', borderRadius: 12,
-                      fontSize: '.8rem', fontWeight: 600, color: '#fff', backgroundColor: statusColors[status] || '#999'
-                    }}>
-                      {status}
-                    </span>
-                  )}
-                </div>
-              )
-            })}
           </div>
         </div>
       </div>
@@ -141,10 +96,10 @@ export default function NodeDetail() {
       )}
 
       {chartData.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, margin: '16px 0' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, margin: '16px 0' }}>
           {Object.entries(sensorConfig).map(([key, cfg]) => (
             <div className="card" key={key}>
-              <div className="card-title">{cfg.label} over time</div>
+              <div className="card-title">{cfg.label} en el tiempo</div>
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />

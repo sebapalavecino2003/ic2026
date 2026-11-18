@@ -47,11 +47,14 @@ export default function Dashboard() {
           <div key={t.node_id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
             <Link to={`/nodes/${t.node_id}`} style={{ fontWeight: 600 }}>{getLocalName(t.node_id) || t.name || t.node_id}</Link>
             <span style={{ color: 'var(--text2)', fontSize: '.85rem' }}>
-              {t.temperature != null && `${t.temperature}°C`}
-              {t.gas != null && ` · ${t.gas}ppm`}
-              {t.presencia != null && ` · Presencia ${t.presencia ? 'sí' : 'no'}`}
-              {t.luz_ventana != null && ` · Ventana ${t.luz_ventana}lx`}
-              {t.rele != null && ` · Relé ${t.rele ? 'ON' : 'off'}`}
+              {[
+                t.presencia != null && `Presencia ${t.presencia ? 'sí' : 'no'}`,
+                t.luz_aula != null && `Aula ${t.luz_aula} lx`,
+                t.luz_ventana != null && `Ventana ${t.luz_ventana} lx`,
+                t.temp_c != null && `${t.temp_c}°C`,
+                t.humedad != null && `${t.humedad}%`,
+                t.rele != null && `Luz ${t.rele ? 'ON' : 'off'}`,
+              ].filter(Boolean).join(' · ')}
             </span>
           </div>
         ))}

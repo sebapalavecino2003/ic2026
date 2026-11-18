@@ -397,27 +397,23 @@
     "id": "n001b",
     "type": "tab",
     "wires": [],
-    "label": "Offline Detector",
-    "z": "z_off"
+    "label": "Status",
+    "z": "z_status"
   },
   {
     "id": "n001c",
-    "type": "inject",
+    "type": "mqtt in",
     "wires": [
       [
         "n001d"
       ]
     ],
-    "z": "z_off",
-    "name": "Check offline every 30s",
-    "props": [],
-    "repeat": "30",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "payload": "",
-    "payloadType": "date"
+    "z": "z_status",
+    "name": "Status MQTT",
+    "topic": "nodealert/+/status",
+    "qos": "1",
+    "datatype": "utf8",
+    "broker": "br_main"
   },
   {
     "id": "n001d",
@@ -427,9 +423,9 @@
         "n001e"
       ]
     ],
-    "z": "z_off",
-    "name": "Find offline",
-    "func": "msg.topic=\"SELECT node_id FROM nodes WHERE is_online=1 AND hidden=0 AND last_seen<datetime('now','-60 seconds')\";return msg;",
+    "z": "z_status",
+    "name": "Process status",
+    "func": "\nvar nid = msg.topic.split('/')[1];\nvar st = (msg.payload||'').toString().trim().toLowerCase();\nvar online = (st === 'online') ? 1 : 0;\nvar now = new Date().toISOString().replace('T',' ').split('.')[0];\nmsg.topic = \"INSERT INTO nodes(node_id,name,is_online,last_seen) SELECT '\"+nid+\"','\"+nid+\"',\"+online+\",'\"+now+\"' WHERE NOT EXISTS (SELECT 1 FROM nodes WHERE node_id='\"+nid+\"'); UPDATE nodes SET is_online=\"+online+\", last_seen='\"+now+\"' WHERE node_id='\"+nid+\"' AND hidden=0;\";\nreturn msg;",
     "outputs": 1,
     "noerr": 0,
     "initialize": "",
@@ -444,6 +440,80 @@
         "n001f"
       ]
     ],
+    "z": "z_status",
+    "name": "Update status",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n001f",
+    "type": "debug",
+    "wires": [
+      []
+    ],
+    "z": "z_status",
+    "name": "Status updated",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto"
+  },
+  {
+    "id": "n0020",
+    "type": "tab",
+    "wires": [],
+    "label": "Offline Detector",
+    "z": "z_off"
+  },
+  {
+    "id": "n0021",
+    "type": "inject",
+    "wires": [
+      [
+        "n0022"
+      ]
+    ],
+    "z": "z_off",
+    "name": "Check offline every 30s",
+    "props": [],
+    "repeat": "30",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date"
+  },
+  {
+    "id": "n0022",
+    "type": "function",
+    "wires": [
+      [
+        "n0023"
+      ]
+    ],
+    "z": "z_off",
+    "name": "Find offline",
+    "func": "msg.topic=\"SELECT node_id FROM nodes WHERE is_online=1 AND hidden=0 AND last_seen<datetime('now','-60 seconds')\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0023",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0024"
+      ]
+    ],
     "z": "z_off",
     "name": "Select offline nodes",
     "mydb": "db_main",
@@ -451,11 +521,11 @@
     "sql": ""
   },
   {
-    "id": "n001f",
+    "id": "n0024",
     "type": "function",
     "wires": [
       [
-        "n0020"
+        "n0025"
       ]
     ],
     "z": "z_off",
@@ -468,7 +538,7 @@
     "libs": []
   },
   {
-    "id": "n0020",
+    "id": "n0025",
     "type": "sqlite",
     "wires": [
       []
@@ -480,18 +550,18 @@
     "sql": ""
   },
   {
-    "id": "n0021",
+    "id": "n0026",
     "type": "tab",
     "wires": [],
     "label": "Cleanup",
     "z": "z_cln"
   },
   {
-    "id": "n0022",
+    "id": "n0027",
     "type": "inject",
     "wires": [
       [
-        "n0023"
+        "n0028"
       ]
     ],
     "z": "z_cln",
@@ -506,11 +576,11 @@
     "payloadType": "date"
   },
   {
-    "id": "n0023",
+    "id": "n0028",
     "type": "function",
     "wires": [
       [
-        "n0024"
+        "n0029"
       ]
     ],
     "z": "z_cln",
@@ -523,11 +593,11 @@
     "libs": []
   },
   {
-    "id": "n0024",
+    "id": "n0029",
     "type": "sqlite",
     "wires": [
       [
-        "n0025"
+        "n002a"
       ]
     ],
     "z": "z_cln",
@@ -537,7 +607,7 @@
     "sql": ""
   },
   {
-    "id": "n0025",
+    "id": "n002a",
     "type": "debug",
     "wires": [
       []
@@ -554,18 +624,18 @@
     "statusType": "auto"
   },
   {
-    "id": "n0026",
+    "id": "n002b",
     "type": "tab",
     "wires": [],
     "label": "API",
     "z": "z_api"
   },
   {
-    "id": "n0027",
+    "id": "n002c",
     "type": "http in",
     "wires": [
       [
-        "n0028"
+        "n002d"
       ]
     ],
     "z": "z_api",
@@ -576,11 +646,11 @@
     "swaggerDoc": ""
   },
   {
-    "id": "n0028",
+    "id": "n002d",
     "type": "function",
     "wires": [
       [
-        "n0029"
+        "n002e"
       ]
     ],
     "z": "z_api",
@@ -593,7 +663,7 @@
     "libs": []
   },
   {
-    "id": "n0029",
+    "id": "n002e",
     "type": "http response",
     "wires": [
       []
@@ -604,11 +674,11 @@
     "headers": {}
   },
   {
-    "id": "n002a",
+    "id": "n002f",
     "type": "http in",
     "wires": [
       [
-        "n002b"
+        "n0030"
       ]
     ],
     "z": "z_api",
@@ -619,11 +689,11 @@
     "swaggerDoc": ""
   },
   {
-    "id": "n002b",
+    "id": "n0030",
     "type": "function",
     "wires": [
       [
-        "n002c"
+        "n0031"
       ]
     ],
     "z": "z_api",
@@ -636,11 +706,11 @@
     "libs": []
   },
   {
-    "id": "n002c",
+    "id": "n0031",
     "type": "sqlite",
     "wires": [
       [
-        "n002d"
+        "n0032"
       ]
     ],
     "z": "z_api",
@@ -650,7 +720,7 @@
     "sql": ""
   },
   {
-    "id": "n002d",
+    "id": "n0032",
     "type": "http response",
     "wires": [
       []
@@ -661,11 +731,11 @@
     "headers": {}
   },
   {
-    "id": "n002e",
+    "id": "n0033",
     "type": "http in",
     "wires": [
       [
-        "n002f"
+        "n0034"
       ]
     ],
     "z": "z_api",
@@ -676,11 +746,11 @@
     "swaggerDoc": ""
   },
   {
-    "id": "n002f",
+    "id": "n0034",
     "type": "function",
     "wires": [
       [
-        "n0030"
+        "n0035"
       ]
     ],
     "z": "z_api",
@@ -693,11 +763,11 @@
     "libs": []
   },
   {
-    "id": "n0030",
+    "id": "n0035",
     "type": "sqlite",
     "wires": [
       [
-        "n0031"
+        "n0036"
       ]
     ],
     "z": "z_api",
@@ -707,7 +777,7 @@
     "sql": ""
   },
   {
-    "id": "n0031",
+    "id": "n0036",
     "type": "http response",
     "wires": [
       []
@@ -718,11 +788,11 @@
     "headers": {}
   },
   {
-    "id": "n0032",
+    "id": "n0037",
     "type": "http in",
     "wires": [
       [
-        "n0033"
+        "n0038"
       ]
     ],
     "z": "z_api",
@@ -733,11 +803,11 @@
     "swaggerDoc": ""
   },
   {
-    "id": "n0033",
+    "id": "n0038",
     "type": "function",
     "wires": [
       [
-        "n0034"
+        "n0039"
       ]
     ],
     "z": "z_api",
@@ -750,11 +820,11 @@
     "libs": []
   },
   {
-    "id": "n0034",
+    "id": "n0039",
     "type": "sqlite",
     "wires": [
       [
-        "n0035"
+        "n003a"
       ]
     ],
     "z": "z_api",
@@ -764,7 +834,7 @@
     "sql": ""
   },
   {
-    "id": "n0035",
+    "id": "n003a",
     "type": "http response",
     "wires": [
       []
@@ -775,11 +845,11 @@
     "headers": {}
   },
   {
-    "id": "n0036",
+    "id": "n003b",
     "type": "http in",
     "wires": [
       [
-        "n0037"
+        "n003c"
       ]
     ],
     "z": "z_api",
@@ -790,11 +860,11 @@
     "swaggerDoc": ""
   },
   {
-    "id": "n0037",
+    "id": "n003c",
     "type": "function",
     "wires": [
       [
-        "n0038"
+        "n003d"
       ]
     ],
     "z": "z_api",
@@ -807,11 +877,11 @@
     "libs": []
   },
   {
-    "id": "n0038",
+    "id": "n003d",
     "type": "sqlite",
     "wires": [
       [
-        "n0039"
+        "n003e"
       ]
     ],
     "z": "z_api",
@@ -821,7 +891,7 @@
     "sql": ""
   },
   {
-    "id": "n0039",
+    "id": "n003e",
     "type": "http response",
     "wires": [
       []
@@ -832,11 +902,11 @@
     "headers": {}
   },
   {
-    "id": "n003a",
+    "id": "n003f",
     "type": "http in",
     "wires": [
       [
-        "n003b"
+        "n0040"
       ]
     ],
     "z": "z_api",
@@ -847,11 +917,11 @@
     "swaggerDoc": ""
   },
   {
-    "id": "n003b",
+    "id": "n0040",
     "type": "function",
     "wires": [
       [
-        "n003c"
+        "n0041"
       ]
     ],
     "z": "z_api",
@@ -864,11 +934,11 @@
     "libs": []
   },
   {
-    "id": "n003c",
+    "id": "n0041",
     "type": "sqlite",
     "wires": [
       [
-        "n003d"
+        "n0042"
       ]
     ],
     "z": "z_api",
@@ -878,7 +948,7 @@
     "sql": ""
   },
   {
-    "id": "n003d",
+    "id": "n0042",
     "type": "http response",
     "wires": [
       []
@@ -889,11 +959,11 @@
     "headers": {}
   },
   {
-    "id": "n003e",
+    "id": "n0043",
     "type": "http in",
     "wires": [
       [
-        "n003f"
+        "n0044"
       ]
     ],
     "z": "z_api",
@@ -904,11 +974,11 @@
     "swaggerDoc": ""
   },
   {
-    "id": "n003f",
+    "id": "n0044",
     "type": "function",
     "wires": [
       [
-        "n0040"
+        "n0045"
       ]
     ],
     "z": "z_api",
@@ -921,11 +991,11 @@
     "libs": []
   },
   {
-    "id": "n0040",
+    "id": "n0045",
     "type": "sqlite",
     "wires": [
       [
-        "n0041"
+        "n0046"
       ]
     ],
     "z": "z_api",
@@ -935,7 +1005,7 @@
     "sql": ""
   },
   {
-    "id": "n0041",
+    "id": "n0046",
     "type": "http response",
     "wires": [
       []
@@ -946,11 +1016,11 @@
     "headers": {}
   },
   {
-    "id": "n0042",
+    "id": "n0047",
     "type": "http in",
     "wires": [
       [
-        "n0043"
+        "n0048"
       ]
     ],
     "z": "z_api",
@@ -961,11 +1031,11 @@
     "swaggerDoc": ""
   },
   {
-    "id": "n0043",
+    "id": "n0048",
     "type": "function",
     "wires": [
       [
-        "n0044"
+        "n0049"
       ]
     ],
     "z": "z_api",
@@ -978,11 +1048,11 @@
     "libs": []
   },
   {
-    "id": "n0044",
+    "id": "n0049",
     "type": "sqlite",
     "wires": [
       [
-        "n0045"
+        "n004a"
       ]
     ],
     "z": "z_api",
@@ -992,7 +1062,7 @@
     "sql": ""
   },
   {
-    "id": "n0045",
+    "id": "n004a",
     "type": "http response",
     "wires": [
       []
@@ -1003,11 +1073,11 @@
     "headers": {}
   },
   {
-    "id": "n0046",
+    "id": "n004b",
     "type": "http in",
     "wires": [
       [
-        "n0047"
+        "n004c"
       ]
     ],
     "z": "z_api",
@@ -1018,11 +1088,11 @@
     "swaggerDoc": ""
   },
   {
-    "id": "n0047",
+    "id": "n004c",
     "type": "function",
     "wires": [
       [
-        "n0048"
+        "n004d"
       ]
     ],
     "z": "z_api",
@@ -1035,11 +1105,11 @@
     "libs": []
   },
   {
-    "id": "n0048",
+    "id": "n004d",
     "type": "sqlite",
     "wires": [
       [
-        "n0049"
+        "n004e"
       ]
     ],
     "z": "z_api",
@@ -1049,7 +1119,7 @@
     "sql": ""
   },
   {
-    "id": "n0049",
+    "id": "n004e",
     "type": "http response",
     "wires": [
       []
@@ -1060,11 +1130,11 @@
     "headers": {}
   },
   {
-    "id": "n004a",
+    "id": "n004f",
     "type": "http in",
     "wires": [
       [
-        "n004b"
+        "n0050"
       ]
     ],
     "z": "z_api",
@@ -1075,11 +1145,11 @@
     "swaggerDoc": ""
   },
   {
-    "id": "n004b",
+    "id": "n0050",
     "type": "function",
     "wires": [
       [
-        "n004c"
+        "n0051"
       ]
     ],
     "z": "z_api",
@@ -1092,7 +1162,7 @@
     "libs": []
   },
   {
-    "id": "n004c",
+    "id": "n0051",
     "type": "http response",
     "wires": [
       []
@@ -1103,11 +1173,11 @@
     "headers": {}
   },
   {
-    "id": "n004d",
+    "id": "n0052",
     "type": "http in",
     "wires": [
       [
-        "n004e"
+        "n0053"
       ]
     ],
     "z": "z_api",
@@ -1118,16 +1188,17 @@
     "swaggerDoc": ""
   },
   {
-    "id": "n004e",
+    "id": "n0053",
     "type": "function",
     "wires": [
       [
-        "n004f"
+        "n0054",
+        "n0055"
       ]
     ],
     "z": "z_api",
     "name": "command_publish",
-    "func": "\nvar nid=msg.req.params.node_id,cmd=msg.req.body.command;\nif(!cmd){msg.statusCode=400;msg.payload={error:\"command is required (REBOOT, BUZZER_ON, BUZZER_OFF, AUTO)\"};return msg;}\nmsg.topic=\"nodealert/\"+nid+\"/commands\";\nmsg.payload=cmd;\nmsg.retain=false;\nreturn msg;",
+    "func": "\nvar nid=msg.req.params.node_id,cmd=msg.req.body.command;\nif(!cmd){msg.statusCode=400;msg.payload={error:\"command is required (REBOOT, BUZZER_ON, BUZZER_OFF, AUTO, RELE_ON, RELE_OFF)\"};return msg;}\nmsg.topic=\"nodealert/\"+nid+\"/commands\";\nmsg.payload=cmd;\nmsg.qos=1;\nmsg.retain=false;\nmsg.statusCode=200;\nreturn msg;",
     "outputs": 1,
     "noerr": 0,
     "initialize": "",
@@ -1135,22 +1206,20 @@
     "libs": []
   },
   {
-    "id": "n004f",
+    "id": "n0054",
     "type": "mqtt out",
     "wires": [
-      [
-        "n0050"
-      ]
+      []
     ],
     "z": "z_api",
     "name": "Send command",
     "topic": "",
-    "qos": "",
+    "qos": "1",
     "retain": "false",
     "broker": "br_main"
   },
   {
-    "id": "n0050",
+    "id": "n0055",
     "type": "http response",
     "wires": [
       []

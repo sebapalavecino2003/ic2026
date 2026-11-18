@@ -109,8 +109,9 @@ export default function Nodes() {
                 <td>
                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                     <button className="btn-ghost btn-sm" onClick={() => { setRenaming(n.node_id); setRenameVal(displayName(n)) }}>Rename</button>
-                    <button className="btn-ghost btn-sm" onClick={() => handleCommand(n.node_id, 'BUZZER_ON')}>Buzzer ON</button>
-                    <button className="btn-ghost btn-sm" onClick={() => handleCommand(n.node_id, 'BUZZER_OFF')}>Buzzer OFF</button>
+                    <button className="btn-ghost btn-sm" onClick={() => handleCommand(n.node_id, 'RELE_ON')}>Luz ON</button>
+                    <button className="btn-ghost btn-sm" onClick={() => handleCommand(n.node_id, 'RELE_OFF')}>Luz OFF</button>
+                    <button className="btn-ghost btn-sm" onClick={() => handleCommand(n.node_id, 'AUTO')}>Auto</button>
                     <button className="btn-ghost btn-sm" onClick={() => handleCommand(n.node_id, 'REBOOT')}>Reboot</button>
                     <button className="btn-danger btn-sm" onClick={() => handleDelete(n.node_id)}>Delete</button>
                   </div>

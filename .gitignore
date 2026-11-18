@@ -5,3 +5,4 @@ build/
 firmware/control-luz/main/config_local.h
 raspberry/nodered/data/flows_cred.json
 firmware/control-luz/main/config_local.h
+firmware/control-luz/tests/test_regla

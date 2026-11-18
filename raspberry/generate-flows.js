@@ -97,6 +97,22 @@ const t4 = debugN("Telemetry ingested", Z.tele);
 [t1, t2, t3, t4].forEach(n => F.push(n));
 t1.wires = [[t2.id]]; t2.wires = [[t3.id]]; t3.wires = [[t4.id]];
 
+// ========== TAB 1b: Status (LWT) ==========
+Z.st = "z_status";
+F.push(tab("Status", Z.st));
+const s1 = node("mqtt in", { z: Z.st, name: "Status MQTT", topic: "nodealert/+/status", qos: "1", datatype: "utf8", broker: BR, wires: [[]] });
+const s2 = fnode("Process status", `
+var nid = msg.topic.split('/')[1];
+var st = (msg.payload||'').toString().trim().toLowerCase();
+var online = (st === 'online') ? 1 : 0;
+var now = new Date().toISOString().replace('T',' ').split('.')[0];
+msg.topic = "INSERT INTO nodes(node_id,name,is_online,last_seen) SELECT '"+nid+"','"+nid+"',"+online+",'"+now+"' WHERE NOT EXISTS (SELECT 1 FROM nodes WHERE node_id='"+nid+"'); UPDATE nodes SET is_online="+online+", last_seen='"+now+"' WHERE node_id='"+nid+"' AND hidden=0;";
+return msg;`, Z.st);
+const s3 = sqlnBatch("Update status", Z.st);
+const s4 = debugN("Status updated", Z.st);
+[s1,s2,s3,s4].forEach(n=>F.push(n));
+s1.wires=[[s2.id]]; s2.wires=[[s3.id]]; s3.wires=[[s4.id]];
+
 // ========== TAB 2: Offline Detector ==========
 
 Z.off = "z_off";
@@ -168,17 +184,18 @@ msg.statusCode=405;msg.payload={error:"Los umbrales son fijos en el firmware. Us
   const hin = node("http in", { z: Z.api, name: "POST /api/nodes/:node_id/command", url: "/api/nodes/:node_id/command", method: "post", upload: false, swaggerDoc: "", wires: [[]] });
   const fn = fnode("command_publish", `
 var nid=msg.req.params.node_id,cmd=msg.req.body.command;
-if(!cmd){msg.statusCode=400;msg.payload={error:"command is required (REBOOT, BUZZER_ON, BUZZER_OFF, AUTO)"};return msg;}
+if(!cmd){msg.statusCode=400;msg.payload={error:"command is required (REBOOT, BUZZER_ON, BUZZER_OFF, AUTO, RELE_ON, RELE_OFF)"};return msg;}
 msg.topic="nodealert/"+nid+"/commands";
 msg.payload=cmd;
+msg.qos=1;
 msg.retain=false;
+msg.statusCode=200;
 return msg;`, Z.api);
-  const mqtt = node("mqtt out", { z: Z.api, name: "Send command", topic: "", qos: "", retain: "false", broker: BR, wires: [[]] });
+  const mqtt = node("mqtt out", { z: Z.api, name: "Send command", topic: "", qos: "1", retain: "false", broker: BR, wires: [[]] });
   const hres = node("http response", { z: Z.api, name: "", statusCode: "", headers: {}, wires: [[]] });
   [hin, fn, mqtt, hres].forEach(n => F.push(n));
   hin.wires = [[fn.id]];
-  fn.wires = [[mqtt.id]];
-  mqtt.wires = [[hres.id]];
+  fn.wires = [[mqtt.id, hres.id]];
 }
 
 fs.writeFileSync(__dirname + "/nodered/data/flows.json", JSON.stringify(F, null, 2));

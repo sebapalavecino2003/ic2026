@@ -9,6 +9,7 @@
 #include "esp_log.h"
 #include "esp_event.h"
 #include "esp_netif.h"
+#include "esp_pm.h"
 #include "esp_wifi.h"
 #include "mqtt_client.h"
 #include "nvs_flash.h"
@@ -60,22 +61,22 @@
 
 // ===== WiFi / MQTT (sobrescribibles en config_local.h) =====
 #ifndef WIFI_SSID
-#define WIFI_SSID "Palavecino"
+#error "Definir WIFI_SSID en config_local.h"
 #endif
 #ifndef WIFI_PASS
-#define WIFI_PASS "Palavecino992"
+#error "Definir WIFI_PASS en config_local.h"
 #endif
 #ifndef MQTT_BROKER_URI
-#define MQTT_BROKER_URI "mqtt://192.168.0.126:1883"
+#error "Definir MQTT_BROKER_URI en config_local.h"
 #endif
 #ifndef MQTT_USER
-#define MQTT_USER "nodealert_esp32"
+#error "Definir MQTT_USER en config_local.h"
 #endif
 #ifndef MQTT_PASS
-#define MQTT_PASS "test_password"
+#error "Definir MQTT_PASS en config_local.h"
 #endif
 #ifndef DEVICE_ID
-#define DEVICE_ID "nodealert-luz01"
+#error "Definir DEVICE_ID en config_local.h"
 #endif
 
 #define DEBOUNCE_MS 2000
@@ -111,6 +112,13 @@ static float humedad_pct = NAN;
 
 static bool luz_encendida = false;
 static bool manual_override = false;
+static esp_pm_lock_handle_t pm_lock = NULL;
+static volatile bool cmd_reboot = false;
+static volatile bool cmd_rele_on = false;
+static volatile bool cmd_rele_off = false;
+static volatile bool cmd_auto = false;
+static volatile bool cmd_led_on = false;
+static volatile bool cmd_led_off = false;
 static bool candidato = false;
 static uint32_t desde_candidato = 0;
 
@@ -125,6 +133,8 @@ static bool primera_lectura = true;
 
 static esp_mqtt_client_handle_t mqtt_client = NULL;
 static bool wifi_ok = false;
+static uint32_t wifi_retry_ms = 0;
+static uint32_t wifi_retry_delay = 1000;
 static bool mqtt_ok = false;
 static uint32_t ultima_publicacion = 0;
 static bool publicar_ya = true;
@@ -226,6 +236,8 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                 char topic[128];
                 snprintf(topic, sizeof(topic), "nodealert/%s/commands", DEVICE_ID);
                 esp_mqtt_client_subscribe(mqtt_client, topic, 1);
+                snprintf(topic, sizeof(topic), "nodealert/%s/status", DEVICE_ID);
+                esp_mqtt_client_publish(mqtt_client, topic, "online", 0, 1, 1);
             }
             break;
         case MQTT_EVENT_DISCONNECTED:
@@ -248,33 +260,17 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             while (end > start && (end[-1] == ' ' || end[-1] == '\t' || end[-1] == '\r' || end[-1] == '\n')) *--end = '\0';
             ESP_LOGI(TAG, "Comando recibido: %s", start);
             if (strcmp(start, "REBOOT") == 0) {
-                esp_restart();
+                cmd_reboot = true;
             } else if (strcmp(start, "RELE_ON") == 0) {
-                bool prev = luz_encendida;
-                manual_override = true;
-                luz_encendida = true;
-                escribir_rele(luz_encendida);
-                publicar_ya = true;
-                ESP_LOGI(TAG, "RELE: %d -> %d (GPIO %d)", prev, luz_encendida, RELE_PIN);
+                cmd_rele_on = true;
             } else if (strcmp(start, "RELE_OFF") == 0) {
-                bool prev = luz_encendida;
-                manual_override = true;
-                luz_encendida = false;
-                escribir_rele(luz_encendida);
-                publicar_ya = true;
-                ESP_LOGI(TAG, "RELE: %d -> %d (GPIO %d)", prev, luz_encendida, RELE_PIN);
+                cmd_rele_off = true;
             } else if (strcmp(start, "AUTO") == 0) {
-                manual_override = false;
-                publicar_ya = true;
-                ESP_LOGI(TAG, "Modo automatico reanudado");
+                cmd_auto = true;
             } else if (strcmp(start, "LED_ON") == 0) {
-                led_presencia(true);
+                cmd_led_on = true;
             } else if (strcmp(start, "LED_OFF") == 0) {
-                led_presencia(false);
-            } else if (strcmp(start, "BUZZER_ON") == 0) {
-                if (RELE_PIN >= 0) { /* no buzzer pin defined; ignore */ }
-            } else if (strcmp(start, "BUZZER_OFF") == 0) {
-                /* no-op */
+                cmd_led_off = true;
             } else {
                 ESP_LOGW(TAG, "Comando desconocido: %s", start);
             }
@@ -291,15 +287,23 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t e
         esp_wifi_connect();
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
         wifi_ok = false;
-        esp_wifi_connect();
+        wifi_retry_ms = aura_millis() + wifi_retry_delay;
+        if (wifi_retry_delay < 30000) wifi_retry_delay *= 2;
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         wifi_ok = true;
+        wifi_retry_delay = 1000;
         ESP_LOGI(TAG, "WiFi conectado");
         if (!mqtt_client) {
+            char will_topic[128];
+            snprintf(will_topic, sizeof(will_topic), "nodealert/%s/status", DEVICE_ID);
             esp_mqtt_client_config_t cfg = {
                 .broker.address.uri = MQTT_BROKER_URI,
                 .credentials.username = MQTT_USER,
                 .credentials.authentication.password = MQTT_PASS,
+                .session.last_will.topic = will_topic,
+                .session.last_will.msg = "offline",
+                .session.last_will.qos = 1,
+                .session.last_will.retain = true,
             };
             mqtt_client = esp_mqtt_client_init(&cfg);
             esp_mqtt_client_register_event(mqtt_client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
@@ -340,6 +344,7 @@ static void publicar_telemetria(bool stale)
     if (RELE_PIN >= 0) cJSON_AddNumberToObject(root, "rele_canal1", luz_encendida ? 1 : 0);
 
     char *json = cJSON_PrintUnformatted(root);
+    if (!json) { cJSON_Delete(root); return; }
     char topic[128];
     snprintf(topic, sizeof(topic), "nodealert/%s/telemetry", DEVICE_ID);
     esp_mqtt_client_publish(mqtt_client, topic, json, 0, 1, 0);
@@ -422,7 +427,16 @@ void app_main(void)
              (unsigned long)umbral_bajo_lx, (unsigned long)umbral_alto_lx,
              (unsigned long)delay_off_s);
 
-    /* Power management deshabilitado para evitar perdida de datos UART/monitor. */
+    esp_pm_config_esp32c3_t pm_config = {
+        .max_freq_mhz = 160,
+        .min_freq_mhz = 80,
+        .light_sleep_enable = true,
+    };
+    esp_err_t pm_err = esp_pm_configure(&pm_config);
+    ESP_LOGI(TAG, "Power management: %s", pm_err == ESP_OK ? "OK (light sleep enabled)" : esp_err_to_name(pm_err));
+    if (pm_err == ESP_OK) {
+        esp_pm_lock_create(ESP_PM_NO_LIGHT_SLEEP, 0, "radar", &pm_lock);
+    }
 
     ultima_presencia_ms = aura_millis();
     sistema_activo = true;
@@ -434,6 +448,7 @@ void app_main(void)
     bool movimiento_anterior = false;
     bool ventana_anterior = false;
     for (;;) {
+        if (pm_lock) esp_pm_lock_acquire(pm_lock);
         ld2420_update(&radar);
         diagnosticar_radar();
 
@@ -445,6 +460,7 @@ void app_main(void)
             lux_aula = leer_bh(&bh_aula, &bh_aula_ok, 0x5C, &ultimo_intento_bh_aula);
             leer_sht();
         }
+        if (pm_lock) esp_pm_lock_release(pm_lock);
 
         bool stale = ld2420_is_stale(&radar);
         uint16_t distancia = ld2420_distancia_cm(&radar);
@@ -472,6 +488,41 @@ void app_main(void)
                      presencia ? "PRESENCIA" : "no cuenta");
         }
 
+        // Aplicar comandos recibidos (desde otra tarea)
+        if (cmd_reboot) { ESP_LOGI(TAG, "Reiniciando..."); esp_restart(); }
+        if (cmd_led_on) { led_presencia(true); cmd_led_on = false; }
+        if (cmd_led_off) { led_presencia(false); cmd_led_off = false; }
+        if (cmd_rele_on) {
+            manual_override = true;
+            luz_encendida = true;
+            escribir_rele(luz_encendida);
+            publicar_ya = true;
+            cmd_rele_on = false;
+            ESP_LOGI(TAG, "RELE: ON (manual)");
+        }
+        if (cmd_rele_off) {
+            manual_override = true;
+            luz_encendida = false;
+            escribir_rele(luz_encendida);
+            publicar_ya = true;
+            cmd_rele_off = false;
+            ESP_LOGI(TAG, "RELE: OFF (manual)");
+        }
+        if (cmd_auto) {
+            manual_override = false;
+            publicar_ya = true;
+            cmd_auto = false;
+            ESP_LOGI(TAG, "Modo automatico reanudado");
+        }
+        // Expirar modo manual cuando el sistema pasa a reposo
+        if (manual_override && !sistema_activo) {
+            manual_override = false;
+            luz_encendida = false;
+            escribir_rele(false);
+            publicar_ya = true;
+            ESP_LOGI(TAG, "Modo manual expirado (reposo)");
+        }
+
         bool activo_antes = sistema_activo;
         sistema_activo = !USAR_PRESENCIA ||
                          aura_millis() - ultima_presencia_ms <= delay_off_s * 1000UL;
@@ -497,6 +548,11 @@ void app_main(void)
         bool vencio_pub = aura_millis() - ultima_publicacion >= INTERVALO_PUBLICACION_S * 1000UL;
         if (wifi_ok && mqtt_ok && (publicar_ya || vencio_pub)) {
             publicar_telemetria(stale);
+        }
+
+        // Reintento WiFi con backoff
+        if (!wifi_ok && aura_millis() >= wifi_retry_ms) {
+            esp_wifi_connect();
         }
 
         vTaskDelay(pdMS_TO_TICKS(20));

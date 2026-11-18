@@ -1,1 +1,1 @@
-# 202611-IC2-palavecino-kirov-alemandi
+nose, nombres de los integrantes
