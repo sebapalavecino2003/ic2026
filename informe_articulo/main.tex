@@ -1,0 +1,191 @@
+% ============================================================
+% NodeAlert IoT — Artículo Científico
+% Formato: APA 7.ª edición | Compilador: pdfLaTeX + Biber
+% Compilar con:
+%   pdflatex main.tex
+%   biber main
+%   pdflatex main.tex
+%   pdflatex main.tex
+% ============================================================
+\documentclass[11pt, a4paper]{article}
+
+% ---- Codificación y lenguaje ----
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish, es-nodecimaldot]{babel}
+
+% ---- Tipografía: Arial (helvética como sustituto en LaTeX) ----
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
+% ---- Márgenes APA 7: laterales 3 cm, sup/inf 2.5 cm ----
+\usepackage[
+  top=2.5cm,
+  bottom=2.5cm,
+  left=3cm,
+  right=3cm,
+  headheight=15pt
+]{geometry}
+
+% ---- Interlineado APA (doble) ----
+\usepackage{setspace}
+\doublespacing
+
+% ---- Ajuste de interlineado en tablas, figuras y código ----
+\usepackage{etoolbox}
+\AtBeginEnvironment{table}{\singlespacing}
+\AtBeginEnvironment{figure}{\singlespacing}
+\AtBeginEnvironment{lstlisting}{\singlespacing}
+
+% ---- Encabezado y pie de página ----
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\thepage}
+\fancyhead[L]{\small\textit{NODEALERT IoT --- PALAVECINO, KIROV, ALEMANDI}}
+\renewcommand{\headrulewidth}{0pt}
+
+% ---- Matemáticas ----
+\usepackage{amsmath, amssymb}
+
+% ---- Gráficos y color ----
+\usepackage{graphicx}
+\usepackage[dvipsnames, table]{xcolor}
+\usepackage{float}
+
+% ---- Tablas ----
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+
+% ---- Listas ----
+\usepackage{enumitem}
+\setlist[itemize]{noitemsep, topsep=4pt}
+\setlist[enumerate]{noitemsep, topsep=4pt}
+
+% ---- Código fuente ----
+\usepackage{listings}
+\lstset{
+  basicstyle=\small\ttfamily,
+  breaklines=true,
+  frame=single,
+  captionpos=b,
+  numbers=left,
+  numberstyle=\tiny,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape,
+  showstringspaces=false
+}
+
+% ---- Comillas tipográficas (requerido por biblatex con babel) ----
+\usepackage{csquotes}
+
+% ---- Hipervínculos ----
+\usepackage[
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=blue,
+  hidelinks
+]{hyperref}
+
+% ---- Bibliografía APA 7 con biblatex-apa ----
+\usepackage[
+  backend=biber,
+  style=apa,
+  sortcites=true,
+  sorting=nyt
+]{biblatex}
+\addbibresource{referencias.bib}
+
+% ---- TikZ para diagramas ----
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
+
+% ---- Captions APA ----
+\usepackage{caption}
+\captionsetup{
+  font=small,
+  labelfont=bf,
+  justification=raggedright,
+  singlelinecheck=false
+}
+
+% ---- Párrafos: sangría y espaciado ----
+\setlength{\parindent}{0.5in}   % APA: sangría de primera línea
+\setlength{\parskip}{0pt}
+
+% ---- Sección sin numeración para abstract ----
+\newcommand{\abstractsection}[1]{%
+  \vspace{6pt}
+  \noindent\textbf{#1}
+  \vspace{2pt}
+}
+
+% ---- Numeración de ecuaciones ----
+\numberwithin{equation}{section}
+
+% ============================================================
+%                   DOCUMENTO
+% ============================================================
+\begin{document}
+
+% ---- Portada / Cabecera del artículo ----
+\begin{center}
+  {\large\bfseries
+    NodeAlert IoT: Sistema Embebido de Monitoreo Ambiental
+    y Control Autónomo de Iluminación basado en MQTT
+    para Entornos Educativos\par}
+
+  \vspace{18pt}
+
+  {\normalsize\bfseries
+    Palavecino, Sebastián\textsuperscript{1} \quad
+    Kirov, Eloy\textsuperscript{1} \quad
+    Alemandi, Francisco\textsuperscript{1}
+    \par}
+
+  \vspace{6pt}
+  {\small\itshape
+    \textsuperscript{1}Carrera de Ingeniería en Computación,\\
+    Universidad Nacional de Rafaela (UNRaf), Rafaela, Santa Fe, Argentina\par}
+
+  \vspace{6pt}
+  {\small
+    Cátedra: Ingeniería en Computación II\par
+    Docentes a cargo: Milton Pozzo y Matías Wanzenried\par}
+\end{center}
+
+\vspace{12pt}
+\hrule
+\vspace{12pt}
+
+% ---- Resumen, Palabras Clave, Abstract, Keywords ----
+\input{secciones/01_resumen}
+
+\clearpage
+
+% ---- Cuerpo del artículo ----
+\input{secciones/02_introduccion}
+\input{secciones/03_marco_teorico}
+\input{secciones/04_materiales_metodos}
+\input{secciones/05_arquitectura}
+\input{secciones/06_desarrollo}
+\input{secciones/07_resultados}
+\input{secciones/08_discusion}
+\input{secciones/09_conclusiones}
+
+\clearpage
+
+% ---- Anexos ----
+\appendix
+\input{anexos/anexos}
+
+\clearpage
+
+% ---- Bibliografía APA 7 ----
+\printbibliography[heading=bibintoc, title={Referencias}]
+
+\end{document}

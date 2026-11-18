@@ -1,0 +1,98 @@
+% ============================================================
+% 09_conclusiones.tex — Conclusiones y Trabajos Futuros
+% ============================================================
+
+\section{Conclusiones}
+\label{sec:conclusiones}
+
+El presente trabajo presentó el diseño, implementación y validación de NodeAlert IoT,
+un sistema embebido de monitoreo ambiental y control autónomo de iluminación para
+entornos educativos. Los resultados obtenidos permiten enunciar las siguientes
+conclusiones:
+
+\begin{enumerate}
+  \item \textbf{Viabilidad del enfoque edge computing en control de iluminación}:
+        la implementación de la lógica de control completamente en el firmware del
+        microcontrolador demostró ser una elección correcta. Durante las pruebas,
+        el sistema mantuvo el control de la iluminación de forma autónoma incluso
+        en ausencia de conectividad MQTT, confirmando la independencia funcional
+        de la capa de percepción respecto de la capa de aplicación.
+
+  \item \textbf{Efectividad de la lógica de histéresis de doble umbral}:
+        la función \texttt{regla\_deseado()} demostró comportamiento correcto en
+        todos los escenarios de prueba definidos, incluyendo los casos de falla
+        de uno o ambos sensores de luz, la gestión del lazo de retroalimentación
+        inherente al sensor de aula y la transición suave mediada por el debounce
+        de 2\,s.
+
+  \item \textbf{Integración exitosa del radar de microondas LD2420}:
+        el driver desarrollado en C puro sobre ESP-IDF, incluyendo el parser de
+        tramas nativas y el detector de movimiento por votación, operó
+        establemente durante las pruebas. La selección del radar frente a sensores
+        PIR convencionales aporta una mejora cualitativa en la detección de
+        personas estáticas relevante para el contexto de aulas universitarias.
+
+  \item \textbf{Arquitectura de servidor escalable y reproducible}:
+        el stack Docker Compose (Mosquitto + Node-RED + React/Nginx) permitió
+        desplegar toda la infraestructura del servidor con un único comando,
+        con separación clara de responsabilidades entre servicios. La generación
+        programática de flujos Node-RED mediante \texttt{generate-flows.js}
+        garantiza la reproducibilidad del despliegue.
+
+  \item \textbf{Cumplimiento de los requisitos de la cátedra}:
+        el sistema satisface la totalidad de los requisitos mínimos establecidos
+        por la materia Integración Computacional I e II: programación de
+        microcontrolador con optimización de recursos y ahorro de energía,
+        comunicación bidireccional por MQTT con broker propio configurado,
+        suscriptores y publicadores diferenciados, e interfaz de usuario con
+        visualización de variables y controles remotos.
+\end{enumerate}
+
+\section{Trabajos Futuros}
+
+A partir de los resultados obtenidos y las limitaciones identificadas, se proponen
+las siguientes líneas de trabajo futuro:
+
+\begin{enumerate}
+  \item \textbf{Configuración dinámica de umbrales}: implementar la modificación
+        de los parámetros de control (umbrales de luminosidad y tiempo de retardo)
+        en tiempo de ejecución, almacenando los valores en NVS Flash y
+        actualizándolos mediante un mensaje MQTT específico desde el servidor,
+        eliminando la necesidad de reflashear el firmware.
+
+  \item \textbf{Comunicación TLS/SSL}: agregar soporte para MQTT sobre TLS en el
+        cliente ESP-IDF y en Mosquitto, con gestión de certificados integrada en el
+        contenedor Docker, para garantizar confidencialidad e integridad de la
+        telemetría en redes no confiables.
+
+  \item \textbf{Validación multi-nodo}: extender el prototipo a múltiples nodos
+        físicos distribuidos en diferentes aulas, validando la escalabilidad de la
+        arquitectura del broker y de la base de datos SQLite.
+
+  \item \textbf{Calibración de sensores}: comparar las lecturas de los sensores
+        BH1750 y SHT30 contra instrumentos de referencia calibrados (luxómetro y
+        termohigrómetro certificado) y aplicar factores de corrección si fuera
+        necesario.
+
+  \item \textbf{Visualización ampliada}: agregar gráficos de serie temporal para
+        iluminancia (ventana y aula) y estado del relé en la vista NodeDetail, y
+        exportación de datos históricos en formato CSV.
+
+  \item \textbf{Integración con sistemas de gestión de edificios (BMS)}: definir
+        una interfaz de integración con plataformas estándar de gestión de
+        edificios (como Modbus TCP o BACnet/IP) para facilitar la incorporación del
+        sistema en infraestructuras de edificios inteligentes existentes.
+
+  \item \textbf{Ahorro energético cuantificado}: instrumentar el consumo eléctrico
+        de la carga de iluminación controlada durante un período de tiempo
+        representativo y compararlo con una instalación sin control automático, para
+        cuantificar el ahorro energético real del sistema.
+\end{enumerate}
+
+\section*{Agradecimientos}
+
+Se agradece a los docentes de la cátedra de Ingeniería en Computación II de la
+Universidad Nacional de Rafaela (UNRaf), Milton Pozzo y Matías Wanzenried,
+por su orientación técnica, seguimiento y aportes metodológicos durante el
+desarrollo de este proyecto.
+

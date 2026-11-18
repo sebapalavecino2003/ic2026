@@ -1,0 +1,134 @@
+% ============================================================
+% 03_marco_teorico.tex
+% ============================================================
+
+\section{Marco Teórico y Antecedentes}
+\label{sec:marco}
+
+\subsection{Internet de las Cosas (IoT) en entornos educativos}
+
+El Internet de las Cosas (IoT, por sus siglas en inglés) se define como la red de
+objetos físicos equipados con sensores, software y conectividad que les permite
+intercambiar datos con otros sistemas y dispositivos \parencite{Atzori2010}. En el
+ámbito de los edificios educativos, las aplicaciones IoT se han orientado
+principalmente a la gestión energética, el monitoreo de calidad del aire, el control
+de acceso y la automatización de la iluminación \parencite{Jia2019}.
+
+\textcite{Shaikh2014} señalan que los sistemas de control de iluminación basados
+en sensores de ocupación y luminosidad constituyen uno de los casos de uso IoT con
+mayor retorno de inversión en entornos de uso esporádico como aulas universitarias.
+La combinación de sensores fotoeléctricos y detectores de presencia permite aplicar
+estrategias de control adaptativo que atienden simultáneamente al confort visual y
+al ahorro energético.
+
+\subsection{Protocolo MQTT}
+
+MQTT es un protocolo de mensajería ligero basado en el modelo publicador/suscriptor
+(\textit{publish/subscribe}). Un elemento central del protocolo es el
+\textit{broker}, servidor que gestiona la distribución de mensajes entre clientes
+según los temas (\textit{topics}) a los que están suscritos. MQTT opera sobre TCP/IP
+y define tres niveles de calidad de servicio (QoS): entrega sin garantía (QoS\,0),
+entrega al menos una vez (QoS\,1) y entrega exactamente una vez (QoS\,2)
+\parencite{Banks2019}.
+
+La versión 3.1.1 del estándar, publicada por OASIS, es la más ampliamente soportada
+en hardware embebido. El cliente MQTT integrado en el ESP-IDF de Espressif
+implementa dicha versión e incluye soporte para reconexión automática,
+autenticación por usuario y contraseña, y publicaciones con retención
+\parencite{Espressif2024}.
+
+\subsection{ESP32-C3 y ESP-IDF}
+
+El ESP32-C3 es un SoC (System-on-Chip) de Espressif Systems basado en la
+arquitectura RISC-V de 32 bits, con Wi-Fi 802.11\,b/g/n y Bluetooth 5 (LE)
+integrados. Opera a frecuencias de hasta 160\,MHz y dispone de 400\,KB de SRAM y
+4\,MB de Flash \parencite{EspressifDS2024}. Para aplicaciones IoT de bajo consumo,
+el chip implementa modos \textit{modem sleep}, \textit{light sleep} y
+\textit{deep sleep}, con consumos de tan solo 5\,µA en el modo más profundo.
+
+El ESP-IDF (\textit{Espressif IoT Development Framework}) es el framework oficial de
+desarrollo para la familia ESP32. Proporciona una capa de abstracción de hardware
+(HAL) sobre FreeRTOS, drivers certificados para periféricos —incluyendo I\textsuperscript{2}C
+maestro, UART y Wi-Fi—, y un sistema de gestión de componentes que facilita la
+incorporación de bibliotecas externas como cJSON y el cliente MQTT
+\parencite{Espressif2024}.
+
+\subsection{Sensores utilizados}
+
+\subsubsection{BH1750 — Sensor de luminancia}
+
+El BH1750FVI es un sensor digital de luminancia ambiental de 16 bits fabricado por
+Rohm Semiconductor, con interfaz I\textsuperscript{2}C. Opera en el rango de 1 a
+65535\,lx con resolución de 1\,lx en modo de alta resolución continua
+(\textit{Continuous H-Resolution Mode}). Admite dos direcciones I\textsuperscript{2}C
+(0x23 y 0x5C) según el estado del pin ADDR, lo que posibilita la conexión de dos
+unidades en el mismo bus \parencite{Rohm2011}.
+
+La conversión analógica-digital de la señal fotoeléctrica interna entrega un valor
+crudo de 16 bits que se convierte a lux mediante la ecuación:
+
+\begin{equation}
+  E_v = \frac{V_{\text{raw}}}{1{,}2}
+  \label{eq:bh1750}
+\end{equation}
+
+\noindent donde $E_v$ es la iluminancia en lux y $V_{\text{raw}}$ es el valor
+entero de 16 bits leído del sensor.
+
+\subsubsection{SHT30/SHT31 — Sensor de temperatura y humedad}
+
+El SHT30 de Sensirion es un sensor digital de temperatura y humedad relativa con
+interfaz I\textsuperscript{2}C. Ofrece precisión de ±0,3\,°C en temperatura
+(rango $-$40\,°C a +125\,°C) y ±3\,\%\,HR en humedad \parencite{Sensirion2023}.
+El protocolo de comunicación contempla un comando de disparo de medición de 16 bits
+y la lectura de 6 bytes de respuesta que incluyen temperatura, humedad y bytes de
+verificación CRC-8.
+
+Las fórmulas de conversión de los valores crudos de 16 bits son:
+
+\begin{equation}
+  T\,[\mathrm{{}^{\circ}C}] = -45{,}0 + 175{,}0 \cdot \frac{V_T}{2^{16}-1}
+  \label{eq:sht_temp}
+\end{equation}
+
+\begin{equation}
+  HR\,[\%] = 100{,}0 \cdot \frac{V_H}{2^{16}-1}
+  \label{eq:sht_hum}
+\end{equation}
+
+\noindent donde $V_T$ y $V_H$ son los valores crudos de temperatura y humedad,
+respectivamente \parencite{Sensirion2023}.
+
+\subsubsection{HLK-LD2420 — Radar de presencia}
+
+El HLK-LD2420 de Hi-Link es un módulo de radar FMCW (\textit{Frequency-Modulated
+Continuous Wave}) de 24\,GHz diseñado para detección de presencia humana. A
+diferencia de los sensores PIR (infrarrojo pasivo), el radar FMCW detecta tanto
+movimiento macroscópico como la microvibración respiratoria de personas estáticas
+\parencite{HiLink2023}. Opera en el rango de 0 a 8\,m con resolución de 0,7\,m y
+se comunica mediante UART a 115200 baudios.
+
+En modo de reporte nativo simple (\textit{Native Simple Report Mode}), el módulo
+emite tramas de texto con tres tipos de mensajes: \texttt{ON} (presencia detectada),
+\texttt{OFF} (sin presencia) y \texttt{Range }\textit{d} (distancia al objeto en
+centímetros). Este modo reduce la complejidad del procesamiento en el
+microcontrolador respecto al modo de protocolo binario.
+
+\subsection{Node-RED}
+
+Node-RED es una herramienta de programación visual basada en flujos para aplicaciones
+IoT, desarrollada originalmente por IBM y actualmente mantenida por la OpenJS
+Foundation \parencite{NodeRED2024}. Permite construir aplicaciones conectando nodos
+funcionales de forma gráfica, con soporte nativo para protocolos MQTT, HTTP y WebSocket.
+Implementado sobre Node.js, su ejecución en Raspberry Pi dentro de contenedores Docker
+simplifica el despliegue y la portabilidad del sistema.
+
+\subsection{Antecedentes relevantes}
+
+\textcite{Cardiel2012} propusieron una arquitectura de middleware orientada a SCADA
+basada en el modelo de publicación/suscripción, conceptualmente similar a la empleada
+en este trabajo, con separación entre la capa de adquisición de datos y la capa de
+lógica de negocio. \textcite{Jia2019} describieron un sistema IoT para gestión
+energética de edificios educativos usando sensores de ocupación e iluminación,
+obteniendo reducciones de consumo superiores al 40\,\%. Estos antecedentes respaldan
+la viabilidad del enfoque adoptado en NodeAlert IoT.

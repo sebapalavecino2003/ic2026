@@ -1,0 +1,117 @@
+% ============================================================
+% anexos.tex — Anexos técnicos
+% ============================================================
+
+\section{Asignación de pines del ESP32-C3 SuperMini}
+\label{anx:pines}
+
+La Tabla~\ref{tab:pines} detalla la asignación de pines GPIO del ESP32-C3 SuperMini
+utilizada en el prototipo NodeAlert IoT.
+
+\begin{table}[htbp]
+  \caption{\textit{Asignación de pines GPIO del ESP32-C3 SuperMini en el prototipo NodeAlert IoT.}}
+  \label{tab:pines}
+  \centering
+  \small
+  \begin{tabular}{@{}cll@{}}
+    \toprule
+    \textbf{GPIO} & \textbf{Función} & \textbf{Notas} \\
+    \midrule
+    0 & Relé canal 1 (salida) & Activo en nivel bajo \\
+    1 & LED de presencia (salida) & Activo en nivel alto \\
+    4 & I\textsuperscript{2}C SDA & Pull-up interno habilitado \\
+    5 & I\textsuperscript{2}C SCL & Pull-up interno habilitado \\
+    6 & LD2420 TX (UART1) & Transmisión hacia el radar \\
+    7 & LD2420 RX (UART1) & Recepción desde el radar \\
+    \bottomrule
+  \end{tabular}
+  \vspace{4pt}
+
+  \noindent\textit{Nota.} Los pines de Wi-Fi y USB no se listan por ser internos al SoC
+  y no requerir conexión externa. El bus I\textsuperscript{2}C opera a 100\,kHz.
+\end{table}
+
+\section{Esquema de tópicos MQTT y formato JSON}
+\label{anx:mqtt}
+
+El sistema utiliza la convención de nomenclatura de tópicos
+\texttt{nodealert/<device\_id>/<tipo>}. El campo \texttt{device\_id} en el cuerpo
+del mensaje JSON permite al servidor verificar la consistencia del origen del mensaje.
+
+Los campos del mensaje de telemetría son opcionales a excepción de \texttt{device\_id}:
+los campos de sensores en falla se omiten del JSON publicado. Esta decisión reduce
+el tráfico de red y facilita la distinción entre «sensor ausente» y «sensor con
+valor cero».
+
+\section{Estructura del repositorio}
+\label{anx:estructura}
+
+\begin{lstlisting}[caption={Estructura de directorios del proyecto NodeAlert IoT.}, label={lst:estructura}]
+nodered/
+|-- README.md
+|-- firmware/
+|   `-- control-luz/           # Firmware ESP32-C3
+|       |-- main/
+|       |   |-- main.c         # Punto de entrada
+|       |   |-- regla_luz.h    # Logica de control (funcion pura)
+|       |   |-- tiempo.h       # Utilidades de tiempo
+|       |   |-- config_local.h # Credenciales locales (no versionado)
+|       |   `-- drivers/
+|       |       |-- bh1750.c/.h
+|       |       |-- sht31.c/.h
+|       |       `-- ld2420.c/.h
+|       |-- CMakeLists.txt
+|       `-- sdkconfig           # Configuracion ESP-IDF
+`-- raspberry/                  # Stack servidor
+    |-- docker-compose.yml
+    |-- generate-flows.js       # Generador de flujos Node-RED
+    |-- mqtt/                   # Contenedor Mosquitto
+    |   |-- Dockerfile
+    |   |-- mosquitto.conf
+    |   `-- aclfile
+    |-- nodered/                # Contenedor Node-RED
+    |   |-- Dockerfile
+    |   `-- data/
+    |       `-- flows.json
+    `-- frontend/               # Contenedor React/Nginx
+        |-- Dockerfile
+        |-- nginx.conf
+        |-- vite.config.js
+        `-- src/
+            |-- App.jsx
+            |-- api.js
+            `-- pages/
+                |-- Dashboard.jsx
+                |-- Nodes.jsx
+                `-- NodeDetail.jsx
+\end{lstlisting}
+
+\section{Instrucciones de compilación del firmware}
+\label{anx:compilacion}
+
+Para compilar y flashear el firmware se requiere el ESP-IDF v6.1.0 correctamente
+instalado. Los comandos de compilación son:
+
+\begin{lstlisting}[language=bash, caption={Comandos de compilación y flasheo del firmware.}, label={lst:build}]
+cd firmware/control-luz
+# Configurar credenciales locales
+cp main/config_local.ejemplo.h main/config_local.h
+# Editar main/config_local.h con SSID, password y URI MQTT
+
+# Compilar
+idf.py set-target esp32c3
+idf.py build
+
+# Flashear y monitorear
+idf.py -p /dev/ttyUSBx flash monitor
+\end{lstlisting}
+
+Para desplegar el stack servidor:
+
+\begin{lstlisting}[language=bash, caption={Despliegue del stack servidor en Raspberry Pi.}, label={lst:deploy}]
+cd raspberry
+docker compose up -d --build
+# La interfaz web estara disponible en http://<IP-RPi>:3001
+# Node-RED en http://<IP-RPi>:1880
+\end{lstlisting}
+

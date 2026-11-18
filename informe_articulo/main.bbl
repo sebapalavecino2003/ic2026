@@ -1,0 +1,1125 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nyt/apasortcite//global/global/global}
+    \entry{Cardiel2012}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=6240bf60cb29ab1920a00e50bd18a59e}{%
+           family={Abad\bibnamedelima Cardiel},
+           familyi={A\bibinitperiod\bibinitdelim C\bibinitperiod},
+           given={Ismael},
+           giveni={I\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9f9caeda883cb076a1c36d9b62f483f3}{%
+           family={Heradio\bibnamedelima Gil},
+           familyi={H\bibinitperiod\bibinitdelim G\bibinitperiod},
+           given={Ruben},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=b46753571e4571522f348f013509268d}{%
+           family={Cerrada\bibnamedelima Somolinos},
+           familyi={C\bibinitperiod\bibinitdelim S\bibinitperiod},
+           given={Carlos},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=099419f7f153c96f22e08f838074e293}{%
+           family={Cerrada\bibnamedelima Somolinos},
+           familyi={C\bibinitperiod\bibinitdelim S\bibinitperiod},
+           given={Jose},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{e24d4cc981b3b148353f28db0e3e77b0}
+      \strng{fullhash}{ce52d3ef5a621b109222b6c3fc9b0b57}
+      \strng{fullhashraw}{ce52d3ef5a621b109222b6c3fc9b0b57}
+      \strng{bibnamehash}{ce52d3ef5a621b109222b6c3fc9b0b57}
+      \strng{authorbibnamehash}{ce52d3ef5a621b109222b6c3fc9b0b57}
+      \strng{authornamehash}{e24d4cc981b3b148353f28db0e3e77b0}
+      \strng{authorfullhash}{ce52d3ef5a621b109222b6c3fc9b0b57}
+      \strng{authorfullhashraw}{ce52d3ef5a621b109222b6c3fc9b0b57}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Expert Systems with Applications}
+      \field{number}{12}
+      \field{title}{A SCADA oriented middleware for RFID technology}
+      \field{volume}{39}
+      \field{year}{2012}
+      \field{pages}{11115\bibrangedash 11124}
+      \range{pages}{10}
+      \verb{doi}
+      \verb 10.1016/j.eswa.2012.03.043
+      \endverb
+    \endentry
+    \entry{Atzori2010}{book}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=ad2aa762c0a8006a1914b9298952e5d8}{%
+           family={Atzori},
+           familyi={A\bibinitperiod},
+           given={Luigi},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=2dbff5b960cb21204fc50b6941f42947}{%
+           family={Iera},
+           familyi={I\bibinitperiod},
+           given={Antonio},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=04b46031fe439f48519cec659c1d7e36}{%
+           family={Morabito},
+           familyi={M\bibinitperiod},
+           given={Giacomo},
+           giveni={G\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Elsevier}%
+      }
+      \strng{namehash}{81d69f6a7998d24b021610d2ad8b5b37}
+      \strng{fullhash}{d7d33a3e93b65ab811b96314bcf90b0a}
+      \strng{fullhashraw}{d7d33a3e93b65ab811b96314bcf90b0a}
+      \strng{bibnamehash}{d7d33a3e93b65ab811b96314bcf90b0a}
+      \strng{authorbibnamehash}{d7d33a3e93b65ab811b96314bcf90b0a}
+      \strng{authornamehash}{81d69f6a7998d24b021610d2ad8b5b37}
+      \strng{authorfullhash}{d7d33a3e93b65ab811b96314bcf90b0a}
+      \strng{authorfullhashraw}{d7d33a3e93b65ab811b96314bcf90b0a}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Computer Networks}
+      \field{number}{15}
+      \field{title}{The Internet of Things: A Survey}
+      \field{volume}{54}
+      \field{year}{2010}
+      \field{pages}{2787\bibrangedash 2805}
+      \range{pages}{19}
+      \verb{doi}
+      \verb 10.1016/j.comnet.2010.05.010
+      \endverb
+    \endentry
+    \entry{Banks2019}{misc}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=cfd3c6c4bb8d76ddc340f7df27a7dc8e}{%
+           family={Banks},
+           familyi={B\bibinitperiod},
+           given={Andrew},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9d87a395b00fd8b477ec233bb6b125c5}{%
+           family={Briggs},
+           familyi={B\bibinitperiod},
+           given={Ed},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=3ba0bffaa2be019134e055acc20dce07}{%
+           family={Borgendale},
+           familyi={B\bibinitperiod},
+           given={Ken},
+           giveni={K\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=91614d6ba26aab8a0c8ea57ccbaed0b1}{%
+           family={Gupta},
+           familyi={G\bibinitperiod},
+           given={Rahul},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{b0fb3ebdaac8940dc69f2db43ddc33b1}
+      \strng{fullhash}{62d0b73c18ba223abd31321e678539e1}
+      \strng{fullhashraw}{62d0b73c18ba223abd31321e678539e1}
+      \strng{bibnamehash}{62d0b73c18ba223abd31321e678539e1}
+      \strng{authorbibnamehash}{62d0b73c18ba223abd31321e678539e1}
+      \strng{authornamehash}{b0fb3ebdaac8940dc69f2db43ddc33b1}
+      \strng{authorfullhash}{62d0b73c18ba223abd31321e678539e1}
+      \strng{authorfullhashraw}{62d0b73c18ba223abd31321e678539e1}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{OASIS Open}
+      \field{note}{Recuperado el 10 de noviembre de 2026}
+      \field{title}{{MQTT Version 3.1.1}: OASIS Standard}
+      \field{year}{2019}
+      \verb{urlraw}
+      \verb https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html
+      \endverb
+      \verb{url}
+      \verb https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html
+      \endverb
+    \endentry
+    \entry{CatedraICII2026}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=4688f557bf5ae27f58308b1e6a5cd734}{%
+           family={{Cátedra de Ingeniería en Computación II}},
+           familyi={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{4688f557bf5ae27f58308b1e6a5cd734}
+      \strng{fullhash}{4688f557bf5ae27f58308b1e6a5cd734}
+      \strng{fullhashraw}{4688f557bf5ae27f58308b1e6a5cd734}
+      \strng{bibnamehash}{4688f557bf5ae27f58308b1e6a5cd734}
+      \strng{authorbibnamehash}{4688f557bf5ae27f58308b1e6a5cd734}
+      \strng{authornamehash}{4688f557bf5ae27f58308b1e6a5cd734}
+      \strng{authorfullhash}{4688f557bf5ae27f58308b1e6a5cd734}
+      \strng{authorfullhashraw}{4688f557bf5ae27f58308b1e6a5cd734}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Documento interno de cátedra}
+      \field{note}{Universidad Nacional de Rafaela (UNRaf). Docentes: Milton Pozzo y Matías Wanzenried}
+      \field{title}{Requisitos mínimos del Trabajo Final}
+      \field{year}{2026}
+    \endentry
+    \entry{Espressif2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=66589871a3c3f27bcbf3891133af42b1}{%
+           family={{Espressif Systems}},
+           familyi={E\bibinitperiod}}}%
+      }
+      \strng{namehash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{fullhash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{fullhashraw}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{bibnamehash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{authorbibnamehash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{authornamehash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{authorfullhash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{authorfullhashraw}{66589871a3c3f27bcbf3891133af42b1}
+      \field{extraname}{1}
+      \field{sortinit}{E}
+      \field{sortinithash}{8da8a182d344d5b9047633dfc0cc9131}
+      \field{extradate}{1}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Espressif Systems}
+      \field{note}{Recuperado el 5 de noviembre de 2026}
+      \field{title}{{ESP-IDF} Programming Guide v6.1}
+      \field{year}{2024}
+      \verb{urlraw}
+      \verb https://docs.espressif.com/projects/esp-idf/en/v6.1/esp32c3/
+      \endverb
+      \verb{url}
+      \verb https://docs.espressif.com/projects/esp-idf/en/v6.1/esp32c3/
+      \endverb
+    \endentry
+    \entry{EspressifDS2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=66589871a3c3f27bcbf3891133af42b1}{%
+           family={{Espressif Systems}},
+           familyi={E\bibinitperiod}}}%
+      }
+      \strng{namehash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{fullhash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{fullhashraw}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{bibnamehash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{authorbibnamehash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{authornamehash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{authorfullhash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{authorfullhashraw}{66589871a3c3f27bcbf3891133af42b1}
+      \field{extraname}{2}
+      \field{sortinit}{E}
+      \field{sortinithash}{8da8a182d344d5b9047633dfc0cc9131}
+      \field{extradate}{2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Espressif Systems}
+      \field{note}{Recuperado el 5 de noviembre de 2026}
+      \field{title}{{ESP32-C3} Series Datasheet}
+      \field{year}{2024}
+      \verb{urlraw}
+      \verb https://www.espressif.com/sites/default/files/documentation/esp32-c3_datasheet_en.pdf
+      \endverb
+      \verb{url}
+      \verb https://www.espressif.com/sites/default/files/documentation/esp32-c3_datasheet_en.pdf
+      \endverb
+    \endentry
+    \entry{HiLink2023}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=44e1cef61ac3656f650355790914b724}{%
+           family={{Hi-Link Electronics}},
+           familyi={H\bibinitperiod}}}%
+      }
+      \strng{namehash}{44e1cef61ac3656f650355790914b724}
+      \strng{fullhash}{44e1cef61ac3656f650355790914b724}
+      \strng{fullhashraw}{44e1cef61ac3656f650355790914b724}
+      \strng{bibnamehash}{44e1cef61ac3656f650355790914b724}
+      \strng{authorbibnamehash}{44e1cef61ac3656f650355790914b724}
+      \strng{authornamehash}{44e1cef61ac3656f650355790914b724}
+      \strng{authorfullhash}{44e1cef61ac3656f650355790914b724}
+      \strng{authorfullhashraw}{44e1cef61ac3656f650355790914b724}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Hi-Link Electronics}
+      \field{note}{Dato técnico validado a partir del análisis del protocolo implementado en el driver ld2420.c del proyecto}
+      \field{title}{{HLK-LD2420} 24GHz Human Presence Detection Module Datasheet}
+      \field{year}{2023}
+    \endentry
+    \entry{IEA2023}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=b33b47b3008c8c47f90a77e0c2dd3060}{%
+           family={{International Energy Agency}},
+           familyi={I\bibinitperiod}}}%
+      }
+      \strng{namehash}{b33b47b3008c8c47f90a77e0c2dd3060}
+      \strng{fullhash}{b33b47b3008c8c47f90a77e0c2dd3060}
+      \strng{fullhashraw}{b33b47b3008c8c47f90a77e0c2dd3060}
+      \strng{bibnamehash}{b33b47b3008c8c47f90a77e0c2dd3060}
+      \strng{authorbibnamehash}{b33b47b3008c8c47f90a77e0c2dd3060}
+      \strng{authornamehash}{b33b47b3008c8c47f90a77e0c2dd3060}
+      \strng{authorfullhash}{b33b47b3008c8c47f90a77e0c2dd3060}
+      \strng{authorfullhashraw}{b33b47b3008c8c47f90a77e0c2dd3060}
+      \field{sortinit}{I}
+      \field{sortinithash}{8d291c51ee89b6cd86bf5379f0b151d8}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{IEA}
+      \field{note}{Recuperado el 8 de noviembre de 2026}
+      \field{title}{Buildings. Tracking Buildings 2023}
+      \field{year}{2023}
+      \verb{urlraw}
+      \verb https://www.iea.org/energy-system/buildings
+      \endverb
+      \verb{url}
+      \verb https://www.iea.org/energy-system/buildings
+      \endverb
+    \endentry
+    \entry{Jia2019}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=f195848fd8d8e4a746719063c77c56b1}{%
+           family={Jia},
+           familyi={J\bibinitperiod},
+           given={Meng},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9b0a76f3da0c504758b19c47275511d3}{%
+           family={Srinivasan},
+           familyi={S\bibinitperiod},
+           given={Rajesh\bibnamedelima S.},
+           giveni={R\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9f7fc9ed7ce1f1055a6182db80c96162}{%
+           family={Raheem},
+           familyi={R\bibinitperiod},
+           given={Abdulrahman\bibnamedelima A.},
+           giveni={A\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{adb6a197c1652ce85669a9f43fd7693c}
+      \strng{fullhash}{3c48f2dd7496fb40d89bd66166641f07}
+      \strng{fullhashraw}{3c48f2dd7496fb40d89bd66166641f07}
+      \strng{bibnamehash}{3c48f2dd7496fb40d89bd66166641f07}
+      \strng{authorbibnamehash}{3c48f2dd7496fb40d89bd66166641f07}
+      \strng{authornamehash}{adb6a197c1652ce85669a9f43fd7693c}
+      \strng{authorfullhash}{3c48f2dd7496fb40d89bd66166641f07}
+      \strng{authorfullhashraw}{3c48f2dd7496fb40d89bd66166641f07}
+      \field{sortinit}{J}
+      \field{sortinithash}{b2f54a9081ace9966a7cb9413811edb4}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Renewable and Sustainable Energy Reviews}
+      \field{title}{From occupancy to occupant behavior: An analytical survey of data acquisition technologies, modeling methodologies and simulation coupling mechanisms for building energy efficiency}
+      \field{volume}{68}
+      \field{year}{2019}
+      \field{pages}{525\bibrangedash 540}
+      \range{pages}{16}
+      \verb{doi}
+      \verb 10.1016/j.rser.2016.10.011
+      \endverb
+    \endentry
+    \entry{Kralikova2016}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=98633faf633915101b0bbd67e08e67b1}{%
+           family={Kralikova},
+           familyi={K\bibinitperiod},
+           given={Ruzena},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=e4eefcc7cbbe04255b560eeb6eecbc21}{%
+           family={Wessely},
+           familyi={W\bibinitperiod},
+           given={Emil},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{391a542733985edd91ebc74032ec1d63}
+      \strng{fullhash}{391a542733985edd91ebc74032ec1d63}
+      \strng{fullhashraw}{391a542733985edd91ebc74032ec1d63}
+      \strng{bibnamehash}{391a542733985edd91ebc74032ec1d63}
+      \strng{authorbibnamehash}{391a542733985edd91ebc74032ec1d63}
+      \strng{authornamehash}{391a542733985edd91ebc74032ec1d63}
+      \strng{authorfullhash}{391a542733985edd91ebc74032ec1d63}
+      \strng{authorfullhashraw}{391a542733985edd91ebc74032ec1d63}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Management Systems in Production Engineering}
+      \field{number}{24}
+      \field{title}{Lighting quality, productivity and human health in office environments}
+      \field{volume}{4}
+      \field{year}{2016}
+      \field{pages}{177\bibrangedash 182}
+      \range{pages}{6}
+      \verb{doi}
+      \verb 10.12914/MSPE-08-04-2016
+      \endverb
+    \endentry
+    \entry{NodeRED2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=263642944f6c498301458458c276f5f3}{%
+           family={{OpenJS Foundation}},
+           familyi={O\bibinitperiod}}}%
+      }
+      \strng{namehash}{263642944f6c498301458458c276f5f3}
+      \strng{fullhash}{263642944f6c498301458458c276f5f3}
+      \strng{fullhashraw}{263642944f6c498301458458c276f5f3}
+      \strng{bibnamehash}{263642944f6c498301458458c276f5f3}
+      \strng{authorbibnamehash}{263642944f6c498301458458c276f5f3}
+      \strng{authornamehash}{263642944f6c498301458458c276f5f3}
+      \strng{authorfullhash}{263642944f6c498301458458c276f5f3}
+      \strng{authorfullhashraw}{263642944f6c498301458458c276f5f3}
+      \field{sortinit}{O}
+      \field{sortinithash}{2cd7140a07aea5341f9e2771efe90aae}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{OpenJS Foundation}
+      \field{note}{Recuperado el 10 de noviembre de 2026}
+      \field{title}{Node-RED: Low-code programming for event-driven applications}
+      \field{year}{2024}
+      \verb{urlraw}
+      \verb https://nodered.org
+      \endverb
+      \verb{url}
+      \verb https://nodered.org
+      \endverb
+    \endentry
+    \entry{Rohm2011}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=fcf40878c9ba79abb0a061f8f26abff9}{%
+           family={{Rohm Semiconductor}},
+           familyi={R\bibinitperiod}}}%
+      }
+      \strng{namehash}{fcf40878c9ba79abb0a061f8f26abff9}
+      \strng{fullhash}{fcf40878c9ba79abb0a061f8f26abff9}
+      \strng{fullhashraw}{fcf40878c9ba79abb0a061f8f26abff9}
+      \strng{bibnamehash}{fcf40878c9ba79abb0a061f8f26abff9}
+      \strng{authorbibnamehash}{fcf40878c9ba79abb0a061f8f26abff9}
+      \strng{authornamehash}{fcf40878c9ba79abb0a061f8f26abff9}
+      \strng{authorfullhash}{fcf40878c9ba79abb0a061f8f26abff9}
+      \strng{authorfullhashraw}{fcf40878c9ba79abb0a061f8f26abff9}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Rohm Semiconductor}
+      \field{note}{Recuperado el 5 de noviembre de 2026}
+      \field{title}{{BH1750FVI} Datasheet: Digital 16bit Serial Output Type Ambient Light Sensor IC}
+      \field{year}{2011}
+      \verb{urlraw}
+      \verb https://www.mouser.com/datasheet/2/348/bh1750fvi-e-186247.pdf
+      \endverb
+      \verb{url}
+      \verb https://www.mouser.com/datasheet/2/348/bh1750fvi-e-186247.pdf
+      \endverb
+    \endentry
+    \entry{Sensirion2023}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=e022ea74d18272592ae656183a54e73b}{%
+           family={{Sensirion AG}},
+           familyi={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{e022ea74d18272592ae656183a54e73b}
+      \strng{fullhash}{e022ea74d18272592ae656183a54e73b}
+      \strng{fullhashraw}{e022ea74d18272592ae656183a54e73b}
+      \strng{bibnamehash}{e022ea74d18272592ae656183a54e73b}
+      \strng{authorbibnamehash}{e022ea74d18272592ae656183a54e73b}
+      \strng{authornamehash}{e022ea74d18272592ae656183a54e73b}
+      \strng{authorfullhash}{e022ea74d18272592ae656183a54e73b}
+      \strng{authorfullhashraw}{e022ea74d18272592ae656183a54e73b}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Sensirion AG}
+      \field{note}{Recuperado el 5 de noviembre de 2026}
+      \field{title}{{SHT3x-DIS} Datasheet: Humidity and Temperature Sensor}
+      \field{year}{2023}
+      \verb{urlraw}
+      \verb https://sensirion.com/media/documents/213E6A3B/61641DC3/Sensirion_Humidity_Sensors_SHT3x_Datasheet_digital.pdf
+      \endverb
+      \verb{url}
+      \verb https://sensirion.com/media/documents/213E6A3B/61641DC3/Sensirion_Humidity_Sensors_SHT3x_Datasheet_digital.pdf
+      \endverb
+    \endentry
+    \entry{Shaikh2014}{article}{}{}
+      \name{author}{5}{}{%
+        {{un=0,uniquepart=base,hash=5262f3853bfa117e7c298095095dcbcc}{%
+           family={Shaikh},
+           familyi={S\bibinitperiod},
+           given={Pervez\bibnamedelima Hameed},
+           giveni={P\bibinitperiod\bibinitdelim H\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=a4449dcb176f5260eaa0c976ee3fc287}{%
+           family={Nor},
+           familyi={N\bibinitperiod},
+           given={Nursyarizal\bibnamedelimb Bin\bibnamedelima Mohd},
+           giveni={N\bibinitperiod\bibinitdelim B\bibinitperiod\bibinitdelim M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=7b65378492947f195fb75d5c823d358e}{%
+           family={Nallagownden},
+           familyi={N\bibinitperiod},
+           given={Perumal},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=a709bdb4f14db0537f5dac25d0a4341a}{%
+           family={Elamvazuthi},
+           familyi={E\bibinitperiod},
+           given={Irraivan},
+           giveni={I\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=19760c39ae0e8f77d6adff57ddac827e}{%
+           family={Ibrahim},
+           familyi={I\bibinitperiod},
+           given={Taib},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{21e575511263f67107b9a03344eec597}
+      \strng{fullhash}{4d8ef2de1afc263ff78e484a136ff5e4}
+      \strng{fullhashraw}{4d8ef2de1afc263ff78e484a136ff5e4}
+      \strng{bibnamehash}{4d8ef2de1afc263ff78e484a136ff5e4}
+      \strng{authorbibnamehash}{4d8ef2de1afc263ff78e484a136ff5e4}
+      \strng{authornamehash}{21e575511263f67107b9a03344eec597}
+      \strng{authorfullhash}{4d8ef2de1afc263ff78e484a136ff5e4}
+      \strng{authorfullhashraw}{4d8ef2de1afc263ff78e484a136ff5e4}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Renewable and Sustainable Energy Reviews}
+      \field{title}{A review on optimized control systems for building energy and comfort management of smart sustainable buildings}
+      \field{volume}{34}
+      \field{year}{2014}
+      \field{pages}{409\bibrangedash 429}
+      \range{pages}{21}
+      \verb{doi}
+      \verb 10.1016/j.rser.2014.03.027
+      \endverb
+    \endentry
+  \enddatalist
+  \datalist[entry]{nyt/global//global/global/global}
+    \entry{Cardiel2012}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=6240bf60cb29ab1920a00e50bd18a59e}{%
+           family={Abad\bibnamedelima Cardiel},
+           familyi={A\bibinitperiod\bibinitdelim C\bibinitperiod},
+           given={Ismael},
+           giveni={I\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9f9caeda883cb076a1c36d9b62f483f3}{%
+           family={Heradio\bibnamedelima Gil},
+           familyi={H\bibinitperiod\bibinitdelim G\bibinitperiod},
+           given={Ruben},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=b46753571e4571522f348f013509268d}{%
+           family={Cerrada\bibnamedelima Somolinos},
+           familyi={C\bibinitperiod\bibinitdelim S\bibinitperiod},
+           given={Carlos},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=099419f7f153c96f22e08f838074e293}{%
+           family={Cerrada\bibnamedelima Somolinos},
+           familyi={C\bibinitperiod\bibinitdelim S\bibinitperiod},
+           given={Jose},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{e24d4cc981b3b148353f28db0e3e77b0}
+      \strng{fullhash}{ce52d3ef5a621b109222b6c3fc9b0b57}
+      \strng{fullhashraw}{ce52d3ef5a621b109222b6c3fc9b0b57}
+      \strng{bibnamehash}{ce52d3ef5a621b109222b6c3fc9b0b57}
+      \strng{authorbibnamehash}{ce52d3ef5a621b109222b6c3fc9b0b57}
+      \strng{authornamehash}{e24d4cc981b3b148353f28db0e3e77b0}
+      \strng{authorfullhash}{ce52d3ef5a621b109222b6c3fc9b0b57}
+      \strng{authorfullhashraw}{ce52d3ef5a621b109222b6c3fc9b0b57}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Expert Systems with Applications}
+      \field{number}{12}
+      \field{title}{A SCADA oriented middleware for RFID technology}
+      \field{volume}{39}
+      \field{year}{2012}
+      \field{pages}{11115\bibrangedash 11124}
+      \range{pages}{10}
+      \verb{doi}
+      \verb 10.1016/j.eswa.2012.03.043
+      \endverb
+    \endentry
+    \entry{Atzori2010}{book}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=ad2aa762c0a8006a1914b9298952e5d8}{%
+           family={Atzori},
+           familyi={A\bibinitperiod},
+           given={Luigi},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=2dbff5b960cb21204fc50b6941f42947}{%
+           family={Iera},
+           familyi={I\bibinitperiod},
+           given={Antonio},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=04b46031fe439f48519cec659c1d7e36}{%
+           family={Morabito},
+           familyi={M\bibinitperiod},
+           given={Giacomo},
+           giveni={G\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Elsevier}%
+      }
+      \strng{namehash}{81d69f6a7998d24b021610d2ad8b5b37}
+      \strng{fullhash}{d7d33a3e93b65ab811b96314bcf90b0a}
+      \strng{fullhashraw}{d7d33a3e93b65ab811b96314bcf90b0a}
+      \strng{bibnamehash}{d7d33a3e93b65ab811b96314bcf90b0a}
+      \strng{authorbibnamehash}{d7d33a3e93b65ab811b96314bcf90b0a}
+      \strng{authornamehash}{81d69f6a7998d24b021610d2ad8b5b37}
+      \strng{authorfullhash}{d7d33a3e93b65ab811b96314bcf90b0a}
+      \strng{authorfullhashraw}{d7d33a3e93b65ab811b96314bcf90b0a}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Computer Networks}
+      \field{number}{15}
+      \field{title}{The Internet of Things: A Survey}
+      \field{volume}{54}
+      \field{year}{2010}
+      \field{pages}{2787\bibrangedash 2805}
+      \range{pages}{19}
+      \verb{doi}
+      \verb 10.1016/j.comnet.2010.05.010
+      \endverb
+    \endentry
+    \entry{Banks2019}{misc}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=cfd3c6c4bb8d76ddc340f7df27a7dc8e}{%
+           family={Banks},
+           familyi={B\bibinitperiod},
+           given={Andrew},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9d87a395b00fd8b477ec233bb6b125c5}{%
+           family={Briggs},
+           familyi={B\bibinitperiod},
+           given={Ed},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=3ba0bffaa2be019134e055acc20dce07}{%
+           family={Borgendale},
+           familyi={B\bibinitperiod},
+           given={Ken},
+           giveni={K\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=91614d6ba26aab8a0c8ea57ccbaed0b1}{%
+           family={Gupta},
+           familyi={G\bibinitperiod},
+           given={Rahul},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{b0fb3ebdaac8940dc69f2db43ddc33b1}
+      \strng{fullhash}{62d0b73c18ba223abd31321e678539e1}
+      \strng{fullhashraw}{62d0b73c18ba223abd31321e678539e1}
+      \strng{bibnamehash}{62d0b73c18ba223abd31321e678539e1}
+      \strng{authorbibnamehash}{62d0b73c18ba223abd31321e678539e1}
+      \strng{authornamehash}{b0fb3ebdaac8940dc69f2db43ddc33b1}
+      \strng{authorfullhash}{62d0b73c18ba223abd31321e678539e1}
+      \strng{authorfullhashraw}{62d0b73c18ba223abd31321e678539e1}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{OASIS Open}
+      \field{note}{Recuperado el 10 de noviembre de 2026}
+      \field{title}{{MQTT Version 3.1.1}: OASIS Standard}
+      \field{year}{2019}
+      \verb{urlraw}
+      \verb https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html
+      \endverb
+      \verb{url}
+      \verb https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html
+      \endverb
+    \endentry
+    \entry{CatedraICII2026}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=4688f557bf5ae27f58308b1e6a5cd734}{%
+           family={{Cátedra de Ingeniería en Computación II}},
+           familyi={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{4688f557bf5ae27f58308b1e6a5cd734}
+      \strng{fullhash}{4688f557bf5ae27f58308b1e6a5cd734}
+      \strng{fullhashraw}{4688f557bf5ae27f58308b1e6a5cd734}
+      \strng{bibnamehash}{4688f557bf5ae27f58308b1e6a5cd734}
+      \strng{authorbibnamehash}{4688f557bf5ae27f58308b1e6a5cd734}
+      \strng{authornamehash}{4688f557bf5ae27f58308b1e6a5cd734}
+      \strng{authorfullhash}{4688f557bf5ae27f58308b1e6a5cd734}
+      \strng{authorfullhashraw}{4688f557bf5ae27f58308b1e6a5cd734}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Documento interno de cátedra}
+      \field{note}{Universidad Nacional de Rafaela (UNRaf). Docentes: Milton Pozzo y Matías Wanzenried}
+      \field{title}{Requisitos mínimos del Trabajo Final}
+      \field{year}{2026}
+    \endentry
+    \entry{Espressif2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=66589871a3c3f27bcbf3891133af42b1}{%
+           family={{Espressif Systems}},
+           familyi={E\bibinitperiod}}}%
+      }
+      \strng{namehash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{fullhash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{fullhashraw}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{bibnamehash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{authorbibnamehash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{authornamehash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{authorfullhash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{authorfullhashraw}{66589871a3c3f27bcbf3891133af42b1}
+      \field{extraname}{1}
+      \field{sortinit}{E}
+      \field{sortinithash}{8da8a182d344d5b9047633dfc0cc9131}
+      \field{extradate}{1}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Espressif Systems}
+      \field{note}{Recuperado el 5 de noviembre de 2026}
+      \field{title}{{ESP-IDF} Programming Guide v6.1}
+      \field{year}{2024}
+      \verb{urlraw}
+      \verb https://docs.espressif.com/projects/esp-idf/en/v6.1/esp32c3/
+      \endverb
+      \verb{url}
+      \verb https://docs.espressif.com/projects/esp-idf/en/v6.1/esp32c3/
+      \endverb
+    \endentry
+    \entry{EspressifDS2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=66589871a3c3f27bcbf3891133af42b1}{%
+           family={{Espressif Systems}},
+           familyi={E\bibinitperiod}}}%
+      }
+      \strng{namehash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{fullhash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{fullhashraw}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{bibnamehash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{authorbibnamehash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{authornamehash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{authorfullhash}{66589871a3c3f27bcbf3891133af42b1}
+      \strng{authorfullhashraw}{66589871a3c3f27bcbf3891133af42b1}
+      \field{extraname}{2}
+      \field{sortinit}{E}
+      \field{sortinithash}{8da8a182d344d5b9047633dfc0cc9131}
+      \field{extradate}{2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Espressif Systems}
+      \field{note}{Recuperado el 5 de noviembre de 2026}
+      \field{title}{{ESP32-C3} Series Datasheet}
+      \field{year}{2024}
+      \verb{urlraw}
+      \verb https://www.espressif.com/sites/default/files/documentation/esp32-c3_datasheet_en.pdf
+      \endverb
+      \verb{url}
+      \verb https://www.espressif.com/sites/default/files/documentation/esp32-c3_datasheet_en.pdf
+      \endverb
+    \endentry
+    \entry{HiLink2023}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=44e1cef61ac3656f650355790914b724}{%
+           family={{Hi-Link Electronics}},
+           familyi={H\bibinitperiod}}}%
+      }
+      \strng{namehash}{44e1cef61ac3656f650355790914b724}
+      \strng{fullhash}{44e1cef61ac3656f650355790914b724}
+      \strng{fullhashraw}{44e1cef61ac3656f650355790914b724}
+      \strng{bibnamehash}{44e1cef61ac3656f650355790914b724}
+      \strng{authorbibnamehash}{44e1cef61ac3656f650355790914b724}
+      \strng{authornamehash}{44e1cef61ac3656f650355790914b724}
+      \strng{authorfullhash}{44e1cef61ac3656f650355790914b724}
+      \strng{authorfullhashraw}{44e1cef61ac3656f650355790914b724}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Hi-Link Electronics}
+      \field{note}{Dato técnico validado a partir del análisis del protocolo implementado en el driver ld2420.c del proyecto}
+      \field{title}{{HLK-LD2420} 24GHz Human Presence Detection Module Datasheet}
+      \field{year}{2023}
+    \endentry
+    \entry{IEA2023}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=b33b47b3008c8c47f90a77e0c2dd3060}{%
+           family={{International Energy Agency}},
+           familyi={I\bibinitperiod}}}%
+      }
+      \strng{namehash}{b33b47b3008c8c47f90a77e0c2dd3060}
+      \strng{fullhash}{b33b47b3008c8c47f90a77e0c2dd3060}
+      \strng{fullhashraw}{b33b47b3008c8c47f90a77e0c2dd3060}
+      \strng{bibnamehash}{b33b47b3008c8c47f90a77e0c2dd3060}
+      \strng{authorbibnamehash}{b33b47b3008c8c47f90a77e0c2dd3060}
+      \strng{authornamehash}{b33b47b3008c8c47f90a77e0c2dd3060}
+      \strng{authorfullhash}{b33b47b3008c8c47f90a77e0c2dd3060}
+      \strng{authorfullhashraw}{b33b47b3008c8c47f90a77e0c2dd3060}
+      \field{sortinit}{I}
+      \field{sortinithash}{8d291c51ee89b6cd86bf5379f0b151d8}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{IEA}
+      \field{note}{Recuperado el 8 de noviembre de 2026}
+      \field{title}{Buildings. Tracking Buildings 2023}
+      \field{year}{2023}
+      \verb{urlraw}
+      \verb https://www.iea.org/energy-system/buildings
+      \endverb
+      \verb{url}
+      \verb https://www.iea.org/energy-system/buildings
+      \endverb
+    \endentry
+    \entry{Jia2019}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=f195848fd8d8e4a746719063c77c56b1}{%
+           family={Jia},
+           familyi={J\bibinitperiod},
+           given={Meng},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9b0a76f3da0c504758b19c47275511d3}{%
+           family={Srinivasan},
+           familyi={S\bibinitperiod},
+           given={Rajesh\bibnamedelima S.},
+           giveni={R\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9f7fc9ed7ce1f1055a6182db80c96162}{%
+           family={Raheem},
+           familyi={R\bibinitperiod},
+           given={Abdulrahman\bibnamedelima A.},
+           giveni={A\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{adb6a197c1652ce85669a9f43fd7693c}
+      \strng{fullhash}{3c48f2dd7496fb40d89bd66166641f07}
+      \strng{fullhashraw}{3c48f2dd7496fb40d89bd66166641f07}
+      \strng{bibnamehash}{3c48f2dd7496fb40d89bd66166641f07}
+      \strng{authorbibnamehash}{3c48f2dd7496fb40d89bd66166641f07}
+      \strng{authornamehash}{adb6a197c1652ce85669a9f43fd7693c}
+      \strng{authorfullhash}{3c48f2dd7496fb40d89bd66166641f07}
+      \strng{authorfullhashraw}{3c48f2dd7496fb40d89bd66166641f07}
+      \field{sortinit}{J}
+      \field{sortinithash}{b2f54a9081ace9966a7cb9413811edb4}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Renewable and Sustainable Energy Reviews}
+      \field{title}{From occupancy to occupant behavior: An analytical survey of data acquisition technologies, modeling methodologies and simulation coupling mechanisms for building energy efficiency}
+      \field{volume}{68}
+      \field{year}{2019}
+      \field{pages}{525\bibrangedash 540}
+      \range{pages}{16}
+      \verb{doi}
+      \verb 10.1016/j.rser.2016.10.011
+      \endverb
+    \endentry
+    \entry{Kralikova2016}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=98633faf633915101b0bbd67e08e67b1}{%
+           family={Kralikova},
+           familyi={K\bibinitperiod},
+           given={Ruzena},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=e4eefcc7cbbe04255b560eeb6eecbc21}{%
+           family={Wessely},
+           familyi={W\bibinitperiod},
+           given={Emil},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{391a542733985edd91ebc74032ec1d63}
+      \strng{fullhash}{391a542733985edd91ebc74032ec1d63}
+      \strng{fullhashraw}{391a542733985edd91ebc74032ec1d63}
+      \strng{bibnamehash}{391a542733985edd91ebc74032ec1d63}
+      \strng{authorbibnamehash}{391a542733985edd91ebc74032ec1d63}
+      \strng{authornamehash}{391a542733985edd91ebc74032ec1d63}
+      \strng{authorfullhash}{391a542733985edd91ebc74032ec1d63}
+      \strng{authorfullhashraw}{391a542733985edd91ebc74032ec1d63}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Management Systems in Production Engineering}
+      \field{number}{24}
+      \field{title}{Lighting quality, productivity and human health in office environments}
+      \field{volume}{4}
+      \field{year}{2016}
+      \field{pages}{177\bibrangedash 182}
+      \range{pages}{6}
+      \verb{doi}
+      \verb 10.12914/MSPE-08-04-2016
+      \endverb
+    \endentry
+    \entry{NodeRED2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=263642944f6c498301458458c276f5f3}{%
+           family={{OpenJS Foundation}},
+           familyi={O\bibinitperiod}}}%
+      }
+      \strng{namehash}{263642944f6c498301458458c276f5f3}
+      \strng{fullhash}{263642944f6c498301458458c276f5f3}
+      \strng{fullhashraw}{263642944f6c498301458458c276f5f3}
+      \strng{bibnamehash}{263642944f6c498301458458c276f5f3}
+      \strng{authorbibnamehash}{263642944f6c498301458458c276f5f3}
+      \strng{authornamehash}{263642944f6c498301458458c276f5f3}
+      \strng{authorfullhash}{263642944f6c498301458458c276f5f3}
+      \strng{authorfullhashraw}{263642944f6c498301458458c276f5f3}
+      \field{sortinit}{O}
+      \field{sortinithash}{2cd7140a07aea5341f9e2771efe90aae}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{OpenJS Foundation}
+      \field{note}{Recuperado el 10 de noviembre de 2026}
+      \field{title}{Node-RED: Low-code programming for event-driven applications}
+      \field{year}{2024}
+      \verb{urlraw}
+      \verb https://nodered.org
+      \endverb
+      \verb{url}
+      \verb https://nodered.org
+      \endverb
+    \endentry
+    \entry{Rohm2011}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=fcf40878c9ba79abb0a061f8f26abff9}{%
+           family={{Rohm Semiconductor}},
+           familyi={R\bibinitperiod}}}%
+      }
+      \strng{namehash}{fcf40878c9ba79abb0a061f8f26abff9}
+      \strng{fullhash}{fcf40878c9ba79abb0a061f8f26abff9}
+      \strng{fullhashraw}{fcf40878c9ba79abb0a061f8f26abff9}
+      \strng{bibnamehash}{fcf40878c9ba79abb0a061f8f26abff9}
+      \strng{authorbibnamehash}{fcf40878c9ba79abb0a061f8f26abff9}
+      \strng{authornamehash}{fcf40878c9ba79abb0a061f8f26abff9}
+      \strng{authorfullhash}{fcf40878c9ba79abb0a061f8f26abff9}
+      \strng{authorfullhashraw}{fcf40878c9ba79abb0a061f8f26abff9}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Rohm Semiconductor}
+      \field{note}{Recuperado el 5 de noviembre de 2026}
+      \field{title}{{BH1750FVI} Datasheet: Digital 16bit Serial Output Type Ambient Light Sensor IC}
+      \field{year}{2011}
+      \verb{urlraw}
+      \verb https://www.mouser.com/datasheet/2/348/bh1750fvi-e-186247.pdf
+      \endverb
+      \verb{url}
+      \verb https://www.mouser.com/datasheet/2/348/bh1750fvi-e-186247.pdf
+      \endverb
+    \endentry
+    \entry{Sensirion2023}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=e022ea74d18272592ae656183a54e73b}{%
+           family={{Sensirion AG}},
+           familyi={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{e022ea74d18272592ae656183a54e73b}
+      \strng{fullhash}{e022ea74d18272592ae656183a54e73b}
+      \strng{fullhashraw}{e022ea74d18272592ae656183a54e73b}
+      \strng{bibnamehash}{e022ea74d18272592ae656183a54e73b}
+      \strng{authorbibnamehash}{e022ea74d18272592ae656183a54e73b}
+      \strng{authornamehash}{e022ea74d18272592ae656183a54e73b}
+      \strng{authorfullhash}{e022ea74d18272592ae656183a54e73b}
+      \strng{authorfullhashraw}{e022ea74d18272592ae656183a54e73b}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Sensirion AG}
+      \field{note}{Recuperado el 5 de noviembre de 2026}
+      \field{title}{{SHT3x-DIS} Datasheet: Humidity and Temperature Sensor}
+      \field{year}{2023}
+      \verb{urlraw}
+      \verb https://sensirion.com/media/documents/213E6A3B/61641DC3/Sensirion_Humidity_Sensors_SHT3x_Datasheet_digital.pdf
+      \endverb
+      \verb{url}
+      \verb https://sensirion.com/media/documents/213E6A3B/61641DC3/Sensirion_Humidity_Sensors_SHT3x_Datasheet_digital.pdf
+      \endverb
+    \endentry
+    \entry{Shaikh2014}{article}{}{}
+      \name{author}{5}{}{%
+        {{un=0,uniquepart=base,hash=5262f3853bfa117e7c298095095dcbcc}{%
+           family={Shaikh},
+           familyi={S\bibinitperiod},
+           given={Pervez\bibnamedelima Hameed},
+           giveni={P\bibinitperiod\bibinitdelim H\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=a4449dcb176f5260eaa0c976ee3fc287}{%
+           family={Nor},
+           familyi={N\bibinitperiod},
+           given={Nursyarizal\bibnamedelimb Bin\bibnamedelima Mohd},
+           giveni={N\bibinitperiod\bibinitdelim B\bibinitperiod\bibinitdelim M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=7b65378492947f195fb75d5c823d358e}{%
+           family={Nallagownden},
+           familyi={N\bibinitperiod},
+           given={Perumal},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=a709bdb4f14db0537f5dac25d0a4341a}{%
+           family={Elamvazuthi},
+           familyi={E\bibinitperiod},
+           given={Irraivan},
+           giveni={I\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=19760c39ae0e8f77d6adff57ddac827e}{%
+           family={Ibrahim},
+           familyi={I\bibinitperiod},
+           given={Taib},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{21e575511263f67107b9a03344eec597}
+      \strng{fullhash}{4d8ef2de1afc263ff78e484a136ff5e4}
+      \strng{fullhashraw}{4d8ef2de1afc263ff78e484a136ff5e4}
+      \strng{bibnamehash}{4d8ef2de1afc263ff78e484a136ff5e4}
+      \strng{authorbibnamehash}{4d8ef2de1afc263ff78e484a136ff5e4}
+      \strng{authornamehash}{21e575511263f67107b9a03344eec597}
+      \strng{authorfullhash}{4d8ef2de1afc263ff78e484a136ff5e4}
+      \strng{authorfullhashraw}{4d8ef2de1afc263ff78e484a136ff5e4}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Renewable and Sustainable Energy Reviews}
+      \field{title}{A review on optimized control systems for building energy and comfort management of smart sustainable buildings}
+      \field{volume}{34}
+      \field{year}{2014}
+      \field{pages}{409\bibrangedash 429}
+      \range{pages}{21}
+      \verb{doi}
+      \verb 10.1016/j.rser.2014.03.027
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

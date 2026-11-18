@@ -1,0 +1,124 @@
+% ============================================================
+% 04_materiales_metodos.tex
+% ============================================================
+
+\section{Materiales y Métodos}
+\label{sec:materiales}
+
+\subsection{Hardware del nodo sensor}
+
+El nodo sensor se implementó sobre una placa ESP32-C3 SuperMini, formato compacto
+con factor de forma de 22,52\,mm × 18\,mm, que integra el SoC ESP32-C3 de Espressif
+junto con antena de cerámica y regulador de 3,3\,V. La selección de esta plataforma
+se fundamentó en su soporte nativo para Wi-Fi 802.11\,b/g/n, el modo
+gestión de energía básica del ESP-IDF, y el soporte
+oficial del framework ESP-IDF en su versión 6.1.0.
+
+Los sensores conectados al nodo se detallan en la Tabla~\ref{tab:sensores}.
+
+\begin{table}[htbp]
+  \caption{\textit{Sensores del nodo ESP32-C3 y sus características principales.}}
+  \label{tab:sensores}
+  \centering
+  \small
+  \begin{tabularx}{\textwidth}{@{}lllX@{}}
+    \toprule
+    \textbf{Sensor} & \textbf{Magnitud} & \textbf{Interfaz} & \textbf{Parámetros clave} \\
+    \midrule
+    BH1750FVI (×2) & Luminancia & I\textsuperscript{2}C & 1–65535\,lx; 1\,lx resolución; dir. 0x23 y 0x5C \\
+    SHT30 & Temp./Humedad & I\textsuperscript{2}C & ±0,3\,°C; ±3\,\%\,HR; dir. 0x44 \\
+    HLK-LD2420 & Presencia/Radar & UART & 24\,GHz FMCW; 0–8\,m; 115200 baudios \\
+    \bottomrule
+  \end{tabularx}
+  \vspace{4pt}
+
+  \noindent\textit{Nota.} Todos los dispositivos I\textsuperscript{2}C comparten el bus I2C0
+  (SDA: GPIO4, SCL: GPIO5) del ESP32-C3. El radar LD2420 emplea UART1 (RX: GPIO7, TX: GPIO6).
+\end{table}
+
+Adicionalmente, el nodo incorpora un relé de estado sólido controlado desde el
+GPIO0 (activo en nivel bajo) para la conmutación de la carga de iluminación, y un
+LED de indicación de presencia en GPIO1 (activo en nivel alto).
+
+\begin{table}[htbp]
+  \centering
+  \caption{\textit{Asignación de pines del ESP32-C3 en el prototipo NodeAlert IoT.}}
+  \label{tab:pinout}
+  \begin{tabularx}{\textwidth}{l X}
+    \toprule
+    \textbf{GPIO} & \textbf{Componente / Función} \\
+    \midrule
+    GPIO0 & Relé de iluminación (activo en nivel bajo) \\
+    GPIO1 & LED de indicación de presencia (activo en nivel alto) \\
+    GPIO4 & I\textsuperscript{2}C SDA (BH1750 ventana/aula, SHT30) \\
+    GPIO5 & I\textsuperscript{2}C SCL (BH1750 ventana/aula, SHT30) \\
+    GPIO6 & UART1 TX hacia LD2420 (RX del sensor) \\
+    GPIO7 & UART1 RX desde LD2420 (TX del sensor) \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Plataforma de servidor}
+
+El servidor central se desplegó sobre una Raspberry Pi con sistema operativo Linux,
+utilizando Docker Compose para la orquestación de tres contenedores:
+
+\begin{enumerate}
+  \item \textbf{nodealert-mqtt}: basado en la imagen oficial de Eclipse Mosquitto,
+        configurado con autenticación por usuario y contraseña, lista de control
+        de acceso (ACL) y persistencia de datos en volumen local. Expone el puerto
+        1883/TCP.
+  \item \textbf{nodealert-nodered}: imagen \texttt{nodered/node-red:latest}
+        con el paquete adicional \texttt{node-red-node-sqlite} instalado en la
+        imagen Docker personalizada. Expone el puerto 1880/TCP. Depende del
+        contenedor Mosquitto con verificación de salud (\textit{healthcheck}).
+  \item \textbf{nodealert-frontend}: servidor Nginx que sirve el frontend React
+        compilado con Vite. Expone el puerto 3001/TCP en el host.
+\end{enumerate}
+
+Los tres contenedores se comunican a través de la red interna Docker
+\texttt{nodealert-net} (driver \texttt{bridge}).
+
+\subsection{Herramientas de desarrollo}
+
+El firmware se desarrolló íntegramente en lenguaje C utilizando el ESP-IDF v6.1.0
+con el sistema de construcción CMake/Ninja. Los componentes externos incorporados
+mediante el gestor de componentes de ESP-IDF fueron:
+\begin{itemize}
+  \item \texttt{espressif/cjson}: biblioteca de serialización/deserialización JSON
+        utilizada para componer los mensajes de telemetría.
+  \item \texttt{espressif/mqtt}: cliente MQTT basado en el protocolo MQTT 3.1.1.
+\end{itemize}
+
+Los drivers de los sensores (BH1750, SHT30, LD2420) fueron desarrollados
+específicamente para este proyecto sobre los drivers de bajo nivel de ESP-IDF
+(\texttt{i2c\_master} y \texttt{uart}), sin dependencias de bibliotecas de Arduino.
+
+El frontend web se desarrolló con React 18 y React Router v6, utilizando Recharts
+para la visualización de series temporales y Axios para la comunicación con la
+API REST. La herramienta de construcción empleada fue Vite 5.
+
+Los flujos de Node-RED fueron generados programáticamente mediante un script
+JavaScript (\texttt{generate-flows.js}) que produce el archivo \texttt{flows.json},
+garantizando consistencia y facilidad de mantenimiento.
+
+\subsection{Metodología de desarrollo}
+
+El sistema se desarrolló siguiendo un enfoque incremental por capas, comenzando por
+el firmware del nodo sensor, continuando con la infraestructura del servidor y
+finalizando con la interfaz de usuario. Cada capa fue probada de forma independiente
+antes de integrarla con las adyacentes:
+
+\begin{enumerate}
+  \item \textbf{Fase 1 — Firmware base}: inicialización de periféricos I\textsuperscript{2}C
+        y UART, lectura de sensores, implementación de lógica de control de relé.
+  \item \textbf{Fase 2 — Conectividad}: implementación del módulo Wi-Fi y cliente MQTT,
+        publicación de telemetría JSON, suscripción a tópico de comandos.
+  \item \textbf{Fase 3 — Servidor}: despliegue de Mosquitto, configuración de autenticación
+        y ACL, diseño de flujos Node-RED y esquema de base de datos SQLite.
+  \item \textbf{Fase 4 — API y Frontend}: implementación de la API REST en Node-RED,
+        desarrollo del frontend React con actualización periódica de datos.
+  \item \textbf{Fase 5 — Integración y validación}: pruebas end-to-end del flujo completo
+        desde el sensor hasta la interfaz web.
+\end{enumerate}
+

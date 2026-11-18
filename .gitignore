@@ -1,0 +1,7 @@
+node_modules/
+dist/
+build/
+*.db
+firmware/control-luz/main/config_local.h
+raspberry/nodered/data/flows_cred.json
+firmware/control-luz/main/config_local.h

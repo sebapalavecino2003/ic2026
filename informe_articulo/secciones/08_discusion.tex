@@ -1,0 +1,113 @@
+% ============================================================
+% 08_discusion.tex
+% ============================================================
+
+\section{Discusión}
+\label{sec:discusion}
+
+\subsection{Decisiones de diseño y sus fundamentos}
+
+\subsubsection{Lógica de control en el firmware vs. en el servidor}
+
+Una decisión de diseño central en NodeAlert IoT es la ubicación de la lógica de
+control de iluminación íntegramente en el firmware del nodo sensor, sin depender de
+instrucciones provenientes del servidor. Este enfoque, conocido como
+\textit{edge computing}, ofrece ventajas sustanciales en entornos IoT donde la
+conectividad de red puede ser intermitente: el sistema continúa operando
+correctamente durante cortes de Wi-Fi o del broker MQTT, garantizando que la
+iluminación del aula responda a las condiciones reales de ocupación y luminosidad
+independientemente del estado de la red.
+
+La contrapartida es que los parámetros de control (umbrales de luminosidad,
+tiempo de retardo de apagado) son constantes de compilación, lo que requiere
+reflashear el firmware para modificarlos. Esta limitación fue reconocida en el
+diseño y se documentó explícitamente en la API (código HTTP 405 para
+\texttt{POST /api/nodes/:id/config}).
+
+\subsubsection{Separación entre sensor de ventana y sensor de aula}
+
+El uso de dos sensores BH1750 en posiciones físicas distintas (uno orientado hacia
+la fuente de luz natural, otro midiendo la iluminación interna del aula) resuelve
+un problema inherente al control de iluminación artificial: el sensor interno
+registra el efecto del propio foco encendido, creando un lazo de retroalimentación
+positiva que podría mantener el foco apagado aun cuando la luz natural fuese
+insuficiente. La lógica implementada en \texttt{regla\_deseado()} contempla esta
+interacción: el sensor de ventana es el que determina si se enciende la luz,
+mientras que el sensor de aula solo interviene cuando el sensor de ventana no está
+disponible o cuando se requiere confirmar que el aula no tiene ya suficiente
+iluminación por otro medio.
+
+\subsubsection{Radar de microondas vs. sensor PIR}
+
+La selección del HLK-LD2420 en lugar de un sensor PIR convencional se justifica
+por dos razones técnicas. Primero, los sensores PIR son insensibles a personas
+estáticas (sentadas en un escritorio trabajando), mientras que el radar FMCW
+detecta la microvibración respiratoria. Segundo, los sensores PIR son fuertemente
+afectados por corrientes de aire y cambios de temperatura ambiental. Sin embargo,
+el radar FMCW implica mayor complejidad de integración: requiere protocolo UART
+propio y un parser de texto no trivial, además de una lógica de votación para
+reducir falsos positivos.
+
+\subsubsection{Contenedores Docker vs. instalación nativa en Raspberry Pi}
+
+El uso de Docker Compose para el despliegue del stack servidor aporta portabilidad,
+reproducibilidad y aislamiento entre servicios. El comando de despliegue es una
+única instrucción: \texttt{docker compose up -d --build}. La interdependencia entre
+servicios se gestiona mediante el mecanismo de \textit{healthcheck} de Docker:
+Node-RED no arranca hasta que el contenedor Mosquitto responda correctamente en el
+puerto 1883.
+
+\subsubsection{Node-RED como backend}
+
+La elección de Node-RED como motor de backend permite implementar toda la lógica del
+servidor —ingesta MQTT, persistencia SQLite, API REST, detector de nodos offline y
+limpieza periódica— en un entorno visual sin necesidad de un servidor web
+independiente. El soporte nativo de HTTP en Node-RED (nodos \textit{http in} y
+\textit{http response}) evita la complejidad de integrar un framework web
+adicional. El script \texttt{generate-flows.js} garantiza que los flujos sean
+generados programáticamente y reproduzcan fielmente el diseño documentado, lo que
+facilita el control de versiones y la modificación sistemática.
+
+\subsection{Comparación con trabajos relacionados}
+
+NodeAlert IoT comparte principios de diseño con el sistema descrito por
+\textcite{Jia2019}, que emplea sensores de ocupación e iluminación para la gestión
+energética en edificios educativos mediante protocolos IoT estándar. La principal
+diferencia radica en el uso del radar FMCW en lugar de sensores PIR, y en la
+implementación de toda la infraestructura sobre hardware de bajo costo (ESP32-C3
+y Raspberry Pi) con software de código abierto.
+
+Respecto a la arquitectura de middleware descrita por \textcite{Cardiel2012}, el
+presente sistema adopta el modelo publicador/suscriptor de MQTT como capa de
+comunicación entre el nodo sensor y el servidor de procesamiento, análogo al
+concepto de middleware de adquisición de datos SCADA. La capa de lógica de negocio
+(Node-RED) gestiona la persistencia, la exposición de datos y la comunicación hacia
+la interfaz de usuario, en correspondencia con la separación de responsabilidades
+propuesta por dichos autores.
+
+\subsection{Limitaciones identificadas}
+
+Las principales limitaciones del sistema actual son:
+
+\begin{enumerate}
+  \item \textbf{Umbrales de control fijos}: los parámetros de iluminación
+        (60\,lx y 100\,lx) y el tiempo de retardo de apagado (300\,s) son
+        constantes de compilación. No pueden modificarse en tiempo de ejecución
+        sin reflashear el firmware.
+  \item \textbf{Nodo único implementado}: el prototipo comprende un solo nodo
+        sensor (\texttt{nodealert-luz01}). La arquitectura del sistema es
+        multi-nodo por diseño (el tópico MQTT usa comodín \texttt{+}), pero la
+        validación se realizó con un único dispositivo físico.
+  \item \textbf{Sin encriptación TLS en MQTT}: la comunicación entre el ESP32-C3
+        y el broker se realiza en texto plano sobre el puerto 1883. Para un entorno
+        de producción, se requeriría TLS sobre el puerto 8883 con certificados.
+  \item \textbf{Ausencia de historial gráfico de iluminación}: la vista de
+        NodeDetail presenta gráficos de temperatura, gas y llama, pero no de
+        iluminancia ni estado del relé. Estos datos están disponibles en la base
+        de datos pero no se visualizan en gráficos temporales.
+  \item \textbf{Sin calibración de sensores}: los valores reportados por los
+        sensores BH1750 y SHT30 no han sido calibrados contra instrumentos de
+        referencia; se utilizan los valores nominales de los datasheets de los
+        fabricantes.
+\end{enumerate}
+
