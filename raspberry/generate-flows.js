@@ -48,7 +48,7 @@ F.push(node("mqtt-broker", {
   birthTopic: "", birthQos: "0", birthPayload: "",
   closeTopic: "", closeQos: "0", closePayload: "",
   willTopic: "", willQos: "0", willPayload: "",
-  credentials: false, username: "nodealert", password: "nodealert_secret"
+  credentials: false, username: "nodealert", password: "CAMBIAR_PASSWORD_NODEALERT"
 }));
 
 // ========== TAB 0: Init DB ==========
@@ -198,5 +198,5 @@ return msg;`, Z.api);
 }
 
 fs.writeFileSync(__dirname + "/nodered/data/flows.json", JSON.stringify(F, null, 2));
-fs.writeFileSync(__dirname + "/nodered/data/flows_cred.json", JSON.stringify({"br_main":{"user":"nodealert","password":"nodealert_secret"}}, null, 2));
+fs.writeFileSync(__dirname + "/nodered/data/flows_cred.json", JSON.stringify({"br_main":{"user":"nodealert","password":"CAMBIAR_PASSWORD_NODEALERT"}}, null, 2));
 console.log("OK —", F.length, "nodes generated in", Object.keys(Z).length, "flows");
