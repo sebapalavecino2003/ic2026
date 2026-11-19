@@ -1,5 +1,0 @@
-{
-  "dependencies": {
-    "node-red-contrib-sqlitedb": "^1.5.1"
-  }
-}
