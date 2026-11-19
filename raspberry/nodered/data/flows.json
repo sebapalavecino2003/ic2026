@@ -1,0 +1,1232 @@
+[
+  {
+    "id": "db_main",
+    "type": "sqlitedb",
+    "wires": [],
+    "name": "nodered.db",
+    "db": "/data/nodered.db",
+    "mode": "READ_WRITE_CREATE"
+  },
+  {
+    "id": "br_main",
+    "type": "mqtt-broker",
+    "wires": [],
+    "name": "Mosquitto local",
+    "broker": "mosquitto",
+    "port": "1883",
+    "clientid": "",
+    "usetls": false,
+    "compatmode": true,
+    "keepalive": "60",
+    "cleansession": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": "",
+    "credentials": false,
+    "username": "nodealert",
+    "password": "nodealert_secret"
+  },
+  {
+    "id": "n0003",
+    "type": "tab",
+    "wires": [],
+    "label": "Init DB",
+    "z": "z_init"
+  },
+  {
+    "id": "n0004",
+    "type": "inject",
+    "wires": [
+      [
+        "n0005"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Init DB",
+    "props": [],
+    "repeat": "",
+    "crontab": "",
+    "once": true,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date"
+  },
+  {
+    "id": "n0005",
+    "type": "function",
+    "wires": [
+      [
+        "n0006"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Create tables",
+    "func": "msg.topic = `\nCREATE TABLE IF NOT EXISTS nodes (node_id TEXT PRIMARY KEY,name TEXT,is_online INTEGER DEFAULT 0,last_seen DATETIME,hidden INTEGER DEFAULT 0);\nCREATE TABLE IF NOT EXISTS telemetry (id INTEGER PRIMARY KEY AUTOINCREMENT,node_id TEXT,temperature REAL,gas INTEGER,flame INTEGER,temp_status TEXT,gas_status TEXT,flame_status TEXT,presencia INTEGER,luz_ventana REAL,luz_aula REAL,temp_c REAL,humedad REAL,rele INTEGER,timestamp DATETIME);\nCREATE INDEX IF NOT EXISTS idx_telemetry_node_ts ON telemetry(node_id, timestamp);\nCREATE TABLE IF NOT EXISTS node_config (node_id TEXT PRIMARY KEY,temperature_critical REAL DEFAULT 50,gas_warning INTEGER DEFAULT 3000,gas_critical INTEGER DEFAULT 4000,buzzer_enabled INTEGER DEFAULT 1,flame_critical_value REAL DEFAULT 500,flame_critical_severity TEXT DEFAULT 'critical',flame_critical_message TEXT DEFAULT 'Llama detectada',gas_critical_value REAL DEFAULT 2000,gas_critical_severity TEXT DEFAULT 'high',gas_critical_message TEXT DEFAULT 'Nivel de gas peligroso',temp_critical_value REAL DEFAULT 50,temp_critical_severity TEXT DEFAULT 'high',temp_critical_message TEXT DEFAULT 'Temperatura peligrosa',updated_at DATETIME);\n`;return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0006",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0007"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Execute init",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n0007",
+    "type": "function",
+    "wires": [
+      [
+        "n0008"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Migrate schema",
+    "func": "msg.topic=\"SELECT COUNT(*) as cnt FROM pragma_table_info('nodes') WHERE name='hidden'\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0008",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0009"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Check if hidden col exists",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n0009",
+    "type": "function",
+    "wires": [
+      [
+        "n000a"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Add hidden if missing",
+    "func": "var exists=(msg.payload||[])[0];msg.topic=exists&&exists.cnt>0?\"SELECT 1\":\"ALTER TABLE nodes ADD COLUMN hidden INTEGER DEFAULT 0\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n000a",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n000b"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Alter or skip",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n000b",
+    "type": "function",
+    "wires": [
+      [
+        "n000c"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Set hidden default",
+    "func": "msg.topic=\"UPDATE nodes SET hidden=0 WHERE hidden IS NULL\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n000c",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n000d"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Update hidden",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n000d",
+    "type": "function",
+    "wires": [
+      [
+        "n000e"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Migrate telemetry schema",
+    "func": "msg.topic=\"SELECT COUNT(*) as cnt FROM pragma_table_info('telemetry') WHERE name='temp_status'\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n000e",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n000f"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Check if status cols exist",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n000f",
+    "type": "function",
+    "wires": [
+      [
+        "n0010"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Add status cols if missing",
+    "func": "var exists=(msg.payload||[])[0];if(exists&&exists.cnt>0)msg.topic=\"SELECT 1\";else msg.topic=\"ALTER TABLE telemetry ADD COLUMN temp_status TEXT;ALTER TABLE telemetry ADD COLUMN gas_status TEXT;ALTER TABLE telemetry ADD COLUMN flame_status TEXT\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0010",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0011"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Alter or skip telemetry",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n0011",
+    "type": "function",
+    "wires": [
+      [
+        "n0012"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Migrate lighting schema",
+    "func": "msg.topic=\"SELECT COUNT(*) as cnt FROM pragma_table_info('telemetry') WHERE name='rele'\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0012",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0013"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Check if lighting cols exist",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n0013",
+    "type": "function",
+    "wires": [
+      [
+        "n0014"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Add lighting cols if missing",
+    "func": "var exists=(msg.payload||[])[0];if(exists&&exists.cnt>0)msg.topic=\"SELECT 1\";else msg.topic=\"ALTER TABLE telemetry ADD COLUMN luz_ventana REAL;ALTER TABLE telemetry ADD COLUMN luz_aula REAL;ALTER TABLE telemetry ADD COLUMN temp_c REAL;ALTER TABLE telemetry ADD COLUMN humedad REAL;ALTER TABLE telemetry ADD COLUMN rele INTEGER\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0014",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0015"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Alter or skip lighting",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n0015",
+    "type": "debug",
+    "wires": [
+      []
+    ],
+    "z": "z_init",
+    "name": "DB init result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto"
+  },
+  {
+    "id": "n0016",
+    "type": "tab",
+    "wires": [],
+    "label": "Telemetry",
+    "z": "z_tele"
+  },
+  {
+    "id": "n0017",
+    "type": "mqtt in",
+    "wires": [
+      [
+        "n0018"
+      ]
+    ],
+    "z": "z_tele",
+    "name": "Telemetry MQTT",
+    "topic": "nodealert/+/telemetry",
+    "qos": "2",
+    "datatype": "json",
+    "broker": "br_main"
+  },
+  {
+    "id": "n0018",
+    "type": "function",
+    "wires": [
+      [
+        "n0019"
+      ]
+    ],
+    "z": "z_tele",
+    "name": "Process telemetry",
+    "func": "\nvar p = msg.payload, nid = msg.topic.split('/')[1], now = new Date().toISOString().replace('T',' ').split('.')[0], nm = p.device_id||nid;\nvar ts=(p.temp_status||''),gs=(p.gas_status||''),fs=(p.flame_status||'');\nfunction V(x){return (x==null)?'NULL':x;}\nvar temp=V(p.temperature),gas=V(p.gas_ppm),flame=V(p.flame);\nvar pres=V(p.presencia),lv=V(p.luz_ventana_lx),la=V(p.luz_aula_lx),tc=V(p.temp_c),hu=V(p.humedad_pct),rl=V(p.rele_canal1);\nmsg.topic=\"INSERT INTO nodes(node_id,name,is_online,last_seen)SELECT'\"+nid+\"','\"+nm+\"',1,'\"+now+\"'WHERE NOT EXISTS(SELECT 1 FROM nodes WHERE node_id='\"+nid+\"');UPDATE nodes SET is_online=1,last_seen='\"+now+\"',name=COALESCE(NULLIF(name,''),'\"+nm+\"')WHERE node_id='\"+nid+\"'AND hidden=0;INSERT INTO telemetry(node_id,temperature,gas,flame,temp_status,gas_status,flame_status,presencia,luz_ventana,luz_aula,temp_c,humedad,rele,timestamp)SELECT'\"+nid+\"',\"+temp+\",\"+gas+\",\"+flame+\",'\"+ts.replace(/'/g,\"''\")+\"','\"+gs.replace(/'/g,\"''\")+\"','\"+fs.replace(/'/g,\"''\")+\"',\"+pres+\",\"+lv+\",\"+la+\",\"+tc+\",\"+hu+\",\"+rl+\",'\"+now+\"'WHERE(SELECT hidden FROM nodes WHERE node_id='\"+nid+\"')=0;\";\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0019",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n001a"
+      ]
+    ],
+    "z": "z_tele",
+    "name": "Insert telemetry",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n001a",
+    "type": "debug",
+    "wires": [
+      []
+    ],
+    "z": "z_tele",
+    "name": "Telemetry ingested",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto"
+  },
+  {
+    "id": "n001b",
+    "type": "tab",
+    "wires": [],
+    "label": "Status",
+    "z": "z_status"
+  },
+  {
+    "id": "n001c",
+    "type": "mqtt in",
+    "wires": [
+      [
+        "n001d"
+      ]
+    ],
+    "z": "z_status",
+    "name": "Status MQTT",
+    "topic": "nodealert/+/status",
+    "qos": "1",
+    "datatype": "utf8",
+    "broker": "br_main"
+  },
+  {
+    "id": "n001d",
+    "type": "function",
+    "wires": [
+      [
+        "n001e"
+      ]
+    ],
+    "z": "z_status",
+    "name": "Process status",
+    "func": "\nvar nid = msg.topic.split('/')[1];\nvar st = (msg.payload||'').toString().trim().toLowerCase();\nvar online = (st === 'online') ? 1 : 0;\nvar now = new Date().toISOString().replace('T',' ').split('.')[0];\nmsg.topic = \"INSERT INTO nodes(node_id,name,is_online,last_seen) SELECT '\"+nid+\"','\"+nid+\"',\"+online+\",'\"+now+\"' WHERE NOT EXISTS (SELECT 1 FROM nodes WHERE node_id='\"+nid+\"'); UPDATE nodes SET is_online=\"+online+\", last_seen='\"+now+\"' WHERE node_id='\"+nid+\"' AND hidden=0;\";\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n001e",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n001f"
+      ]
+    ],
+    "z": "z_status",
+    "name": "Update status",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n001f",
+    "type": "debug",
+    "wires": [
+      []
+    ],
+    "z": "z_status",
+    "name": "Status updated",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto"
+  },
+  {
+    "id": "n0020",
+    "type": "tab",
+    "wires": [],
+    "label": "Offline Detector",
+    "z": "z_off"
+  },
+  {
+    "id": "n0021",
+    "type": "inject",
+    "wires": [
+      [
+        "n0022"
+      ]
+    ],
+    "z": "z_off",
+    "name": "Check offline every 30s",
+    "props": [],
+    "repeat": "30",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date"
+  },
+  {
+    "id": "n0022",
+    "type": "function",
+    "wires": [
+      [
+        "n0023"
+      ]
+    ],
+    "z": "z_off",
+    "name": "Find offline",
+    "func": "msg.topic=\"SELECT node_id FROM nodes WHERE is_online=1 AND hidden=0 AND last_seen<datetime('now','-60 seconds')\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0023",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0024"
+      ]
+    ],
+    "z": "z_off",
+    "name": "Select offline nodes",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n0024",
+    "type": "function",
+    "wires": [
+      [
+        "n0025"
+      ]
+    ],
+    "z": "z_off",
+    "name": "Split & mark offline",
+    "func": "\nvar rows=msg.payload||[],now=new Date().toISOString().replace('T',' ').split('.')[0];\nreturn rows.map(function(r){return{topic:\"UPDATE nodes SET is_online=0 WHERE node_id='\"+r.node_id+\"'\"}});",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0025",
+    "type": "sqlite",
+    "wires": [
+      []
+    ],
+    "z": "z_off",
+    "name": "Update & log offline",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n0026",
+    "type": "tab",
+    "wires": [],
+    "label": "Cleanup",
+    "z": "z_cln"
+  },
+  {
+    "id": "n0027",
+    "type": "inject",
+    "wires": [
+      [
+        "n0028"
+      ]
+    ],
+    "z": "z_cln",
+    "name": "Daily cleanup",
+    "props": [],
+    "repeat": "86400",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date"
+  },
+  {
+    "id": "n0028",
+    "type": "function",
+    "wires": [
+      [
+        "n0029"
+      ]
+    ],
+    "z": "z_cln",
+    "name": "Cleanup SQL",
+    "func": "msg.topic=\"DELETE FROM telemetry WHERE timestamp<datetime('now','-30 days')\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0029",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n002a"
+      ]
+    ],
+    "z": "z_cln",
+    "name": "Delete old data",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n002a",
+    "type": "debug",
+    "wires": [
+      []
+    ],
+    "z": "z_cln",
+    "name": "Cleanup result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto"
+  },
+  {
+    "id": "n002b",
+    "type": "tab",
+    "wires": [],
+    "label": "API",
+    "z": "z_api"
+  },
+  {
+    "id": "n002c",
+    "type": "http in",
+    "wires": [
+      [
+        "n002d"
+      ]
+    ],
+    "z": "z_api",
+    "name": "GET /api/health",
+    "url": "/api/health",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n002d",
+    "type": "function",
+    "wires": [
+      [
+        "n002e"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_health",
+    "func": "msg.payload={status:\"ok\",timestamp:new Date().toISOString()};msg.statusCode=200;return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n002e",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n002f",
+    "type": "http in",
+    "wires": [
+      [
+        "n0030"
+      ]
+    ],
+    "z": "z_api",
+    "name": "GET /api/nodes",
+    "url": "/api/nodes",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n0030",
+    "type": "function",
+    "wires": [
+      [
+        "n0031"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes",
+    "func": "msg.topic=\"SELECT * FROM nodes WHERE hidden=0 ORDER BY last_seen DESC\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0031",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0032"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n0032",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n0033",
+    "type": "http in",
+    "wires": [
+      [
+        "n0034"
+      ]
+    ],
+    "z": "z_api",
+    "name": "GET /api/nodes/:node_id",
+    "url": "/api/nodes/:node_id",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n0034",
+    "type": "function",
+    "wires": [
+      [
+        "n0035"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes__node_id",
+    "func": "var id=msg.req.params.node_id;msg.topic=\"SELECT n.*,t.temperature,t.gas,t.flame,t.temp_status,t.gas_status,t.flame_status,t.presencia,t.luz_ventana,t.luz_aula,t.temp_c,t.humedad,t.rele,t.timestamp as last_telemetry_ts FROM nodes n LEFT JOIN telemetry t ON t.id=(SELECT id FROM telemetry WHERE node_id='\"+id+\"'ORDER BY timestamp DESC LIMIT 1)WHERE n.node_id='\"+id+\"'AND n.hidden=0\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0035",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0036"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes__node_id",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n0036",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n0037",
+    "type": "http in",
+    "wires": [
+      [
+        "n0038"
+      ]
+    ],
+    "z": "z_api",
+    "name": "POST /api/nodes",
+    "url": "/api/nodes",
+    "method": "post",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n0038",
+    "type": "function",
+    "wires": [
+      [
+        "n0039"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes",
+    "func": "var b=msg.req.body,nid=b.node_id;if(!nid){msg.statusCode=400;msg.payload={error:\"node_id is required\"};return msg;}var nm=(b.name||nid).replace(/'/g,\"''\");msg.topic=\"INSERT OR REPLACE INTO nodes(node_id,name,is_online,last_seen,hidden)VALUES('\"+nid+\"','\"+nm+\"',0,datetime('now'),0);INSERT OR IGNORE INTO node_config(node_id)VALUES('\"+nid+\"')\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0039",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n003a"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n003a",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n003b",
+    "type": "http in",
+    "wires": [
+      [
+        "n003c"
+      ]
+    ],
+    "z": "z_api",
+    "name": "DELETE /api/nodes/:node_id",
+    "url": "/api/nodes/:node_id",
+    "method": "delete",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n003c",
+    "type": "function",
+    "wires": [
+      [
+        "n003d"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes__node_id",
+    "func": "var id=msg.req.params.node_id;msg.topic=\"UPDATE nodes SET hidden=1 WHERE node_id='\"+id+\"'\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n003d",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n003e"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes__node_id",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n003e",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n003f",
+    "type": "http in",
+    "wires": [
+      [
+        "n0040"
+      ]
+    ],
+    "z": "z_api",
+    "name": "GET /api/telemetry/latest",
+    "url": "/api/telemetry/latest",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n0040",
+    "type": "function",
+    "wires": [
+      [
+        "n0041"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_telemetry_latest",
+    "func": "msg.topic=\"SELECT t.*,n.name FROM telemetry t INNER JOIN(SELECT node_id,MAX(timestamp)as max_ts FROM telemetry GROUP BY node_id)latest ON t.node_id=latest.node_id AND t.timestamp=latest.max_ts LEFT JOIN nodes n ON n.node_id=t.node_id ORDER BY t.timestamp DESC\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0041",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0042"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_telemetry_latest",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n0042",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n0043",
+    "type": "http in",
+    "wires": [
+      [
+        "n0044"
+      ]
+    ],
+    "z": "z_api",
+    "name": "GET /api/telemetry/:node_id",
+    "url": "/api/telemetry/:node_id",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n0044",
+    "type": "function",
+    "wires": [
+      [
+        "n0045"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_telemetry__node_id",
+    "func": "var id=msg.req.params.node_id,lim=msg.req.query.limit||50;msg.topic=\"SELECT * FROM telemetry WHERE node_id='\"+id+\"'ORDER BY timestamp DESC LIMIT \"+lim;return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0045",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0046"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_telemetry__node_id",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n0046",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n0047",
+    "type": "http in",
+    "wires": [
+      [
+        "n0048"
+      ]
+    ],
+    "z": "z_api",
+    "name": "GET /api/telemetry/averages",
+    "url": "/api/telemetry/averages",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n0048",
+    "type": "function",
+    "wires": [
+      [
+        "n0049"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_telemetry_averages",
+    "func": "msg.topic=\"SELECT node_id,ROUND(AVG(temperature),1)as avg_temperature,ROUND(AVG(gas),0)as avg_gas,COUNT(*)as samples FROM telemetry WHERE timestamp>datetime('now','-1 hour')GROUP BY node_id\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0049",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n004a"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_telemetry_averages",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n004a",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n004b",
+    "type": "http in",
+    "wires": [
+      [
+        "n004c"
+      ]
+    ],
+    "z": "z_api",
+    "name": "GET /api/nodes/:node_id/config",
+    "url": "/api/nodes/:node_id/config",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n004c",
+    "type": "function",
+    "wires": [
+      [
+        "n004d"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes__node_id_config",
+    "func": "var id=msg.req.params.node_id;msg.topic=\"SELECT * FROM node_config WHERE node_id='\"+id+\"'\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n004d",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n004e"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes__node_id_config",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n004e",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n004f",
+    "type": "http in",
+    "wires": [
+      [
+        "n0050"
+      ]
+    ],
+    "z": "z_api",
+    "name": "POST /api/nodes/:node_id/config",
+    "url": "/api/nodes/:node_id/config",
+    "method": "post",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n0050",
+    "type": "function",
+    "wires": [
+      [
+        "n0051"
+      ]
+    ],
+    "z": "z_api",
+    "name": "config_save",
+    "func": "\nmsg.statusCode=405;msg.payload={error:\"Los umbrales son fijos en el firmware. Use GET para visualizarlos.\"};return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0051",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n0052",
+    "type": "http in",
+    "wires": [
+      [
+        "n0053"
+      ]
+    ],
+    "z": "z_api",
+    "name": "POST /api/nodes/:node_id/command",
+    "url": "/api/nodes/:node_id/command",
+    "method": "post",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n0053",
+    "type": "function",
+    "wires": [
+      [
+        "n0054",
+        "n0055"
+      ]
+    ],
+    "z": "z_api",
+    "name": "command_publish",
+    "func": "\nvar nid=msg.req.params.node_id,cmd=msg.req.body.command;\nif(!cmd){msg.statusCode=400;msg.payload={error:\"command is required\"};return msg;}\nmsg.topic=\"nodealert/\"+nid+\"/commands\";\nmsg.payload=cmd;\nmsg.qos=1;\nmsg.retain=false;\nmsg.statusCode=200;\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0054",
+    "type": "mqtt out",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "Send command",
+    "topic": "",
+    "qos": "1",
+    "retain": "false",
+    "broker": "br_main"
+  },
+  {
+    "id": "n0055",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  }
+]

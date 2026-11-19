@@ -1,0 +1,103 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {chapter}{Resumen}{1}{chapter*.1}%
+\contentsline {chapter}{\numberline {1}Introducci\'on}{6}{chapter.1}%
+\contentsline {chapter}{\numberline {2}Planteamiento del problema}{7}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Descripci\'on del problema}{7}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Preguntas de investigaci\'on}{7}{section.2.2}%
+\contentsline {chapter}{\numberline {3}Justificaci\'on}{9}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Dimensi\'on tecnol\'ogica}{9}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Dimensi\'on acad\'emica}{9}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Dimensi\'on social}{9}{section.3.3}%
+\contentsline {chapter}{\numberline {4}Objetivos}{10}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Objetivo general}{10}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Objetivos espec\'ificos}{10}{section.4.2}%
+\contentsline {chapter}{\numberline {5}Marco te\'orico}{11}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Internet de las Cosas (IoT)}{11}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Sistemas embebidos}{12}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}Microcontrolador ESP32}{13}{subsection.5.2.1}%
+\contentsline {section}{\numberline {5.3}Sensores ambientales}{13}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Sensor DHT11}{13}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Sensor MQ-2}{13}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}Sensor de llama}{14}{subsection.5.3.3}%
+\contentsline {section}{\numberline {5.4}Protocolo MQTT}{14}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Node-RED}{15}{section.5.5}%
+\contentsline {section}{\numberline {5.6}Procesamiento digital de se\~nales en sistemas de monitoreo}{16}{section.5.6}%
+\contentsline {section}{\numberline {5.7}Sistemas de monitoreo y detecci\'on de eventos}{17}{section.5.7}%
+\contentsline {section}{\numberline {5.8}Base de datos SQLite}{17}{section.5.8}%
+\contentsline {section}{\numberline {5.9}Arquitectura de microservicios y contenedores Docker}{18}{section.5.9}%
+\contentsline {section}{\numberline {5.10}Desarrollo web frontend con React}{18}{section.5.10}%
+\contentsline {chapter}{\numberline {6}Estado del arte}{20}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Sistemas de monitoreo inal\'ambrico de se\~nales}{20}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Sistemas de control basados en plataformas embebidas}{20}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Procesamiento de se\~nales y clasificaci\'on de eventos en monitoreo}{21}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Sistemas comerciales de monitoreo ambiental}{21}{section.6.4}%
+\contentsline {section}{\numberline {6.5}Diferencias del proyecto respecto al estado del arte}{22}{section.6.5}%
+\contentsline {chapter}{\numberline {7}Materiales y herramientas}{23}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Hardware}{23}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Software}{23}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Protocolos de comunicaci\'on}{24}{section.7.3}%
+\contentsline {section}{\numberline {7.4}Bibliotecas y dependencias}{24}{section.7.4}%
+\contentsline {subsection}{\numberline {7.4.1}Firmware ESP32}{24}{subsection.7.4.1}%
+\contentsline {subsection}{\numberline {7.4.2}Backend Node-RED}{25}{subsection.7.4.2}%
+\contentsline {subsection}{\numberline {7.4.3}Frontend React}{25}{subsection.7.4.3}%
+\contentsline {chapter}{\numberline {8}Dise\~no del sistema}{26}{chapter.8}%
+\contentsline {section}{\numberline {8.1}Arquitectura general}{26}{section.8.1}%
+\contentsline {section}{\numberline {8.2}Topolog\'ia de red}{26}{section.8.2}%
+\contentsline {section}{\numberline {8.3}Flujo de datos}{27}{section.8.3}%
+\contentsline {section}{\numberline {8.4}Dise\~no de base de datos}{28}{section.8.4}%
+\contentsline {subsection}{\numberline {8.4.1}Tabla \texttt {nodes}}{28}{subsection.8.4.1}%
+\contentsline {subsection}{\numberline {8.4.2}Tabla \texttt {telemetry}}{28}{subsection.8.4.2}%
+\contentsline {subsection}{\numberline {8.4.3}Tabla \texttt {alerts}}{29}{subsection.8.4.3}%
+\contentsline {subsection}{\numberline {8.4.4}Tabla \texttt {node\_config}}{29}{subsection.8.4.4}%
+\contentsline {chapter}{\numberline {9}Implementaci\'on}{31}{chapter.9}%
+\contentsline {section}{\numberline {9.1}Firmware del ESP32}{31}{section.9.1}%
+\contentsline {subsection}{\numberline {9.1.1}Arquitectura del firmware}{31}{subsection.9.1.1}%
+\contentsline {subsection}{\numberline {9.1.2}Inicializaci\'on y conexi\'on de red}{31}{subsection.9.1.2}%
+\contentsline {subsection}{\numberline {9.1.3}Adquisici\'on y filtrado de datos}{32}{subsection.9.1.3}%
+\contentsline {subsection}{\numberline {9.1.4}Publicaci\'on MQTT}{33}{subsection.9.1.4}%
+\contentsline {subsection}{\numberline {9.1.5}Mecanismo de comandos}{33}{subsection.9.1.5}%
+\contentsline {section}{\numberline {9.2}Configuraci\'on del broker MQTT}{33}{section.9.2}%
+\contentsline {section}{\numberline {9.3}Flujos de Node-RED}{34}{section.9.3}%
+\contentsline {subsection}{\numberline {9.3.1}Flujo de inicializaci\'on (Init DB)}{34}{subsection.9.3.1}%
+\contentsline {subsection}{\numberline {9.3.2}Flujo de telemetr\'ia (Telemetry)}{34}{subsection.9.3.2}%
+\contentsline {subsection}{\numberline {9.3.3}Flujo de detecci\'on de nodos desconectados (Offline Detector)}{35}{subsection.9.3.3}%
+\contentsline {subsection}{\numberline {9.3.4}Flujo de limpieza (Cleanup)}{35}{subsection.9.3.4}%
+\contentsline {subsection}{\numberline {9.3.5}Flujo de API REST}{35}{subsection.9.3.5}%
+\contentsline {section}{\numberline {9.4}Configuraci\'on de Docker Compose}{36}{section.9.4}%
+\contentsline {section}{\numberline {9.5}Desarrollo del frontend}{36}{section.9.5}%
+\contentsline {chapter}{\numberline {10}Funcionamiento del sistema}{37}{chapter.10}%
+\contentsline {section}{\numberline {10.1}Secuencia de inicio}{37}{section.10.1}%
+\contentsline {section}{\numberline {10.2}Ciclo de operaci\'on normal}{37}{section.10.2}%
+\contentsline {section}{\numberline {10.3}Mecanismo de alertas}{38}{section.10.3}%
+\contentsline {paragraph}{Nivel 1 -- Firmware:}{38}{section.10.3}%
+\contentsline {paragraph}{Nivel 2 -- Node-RED:}{38}{section.10.3}%
+\contentsline {section}{\numberline {10.4}Comando y control remoto}{39}{section.10.4}%
+\contentsline {chapter}{\numberline {11}Metodolog\'ia de pruebas}{40}{chapter.11}%
+\contentsline {section}{\numberline {11.1}Pruebas de conectividad}{40}{section.11.1}%
+\contentsline {section}{\numberline {11.2}Pruebas de adquisici\'on de datos}{40}{section.11.2}%
+\contentsline {section}{\numberline {11.3}Pruebas de alertas}{40}{section.11.3}%
+\contentsline {section}{\numberline {11.4}Pruebas de integraci\'on}{40}{section.11.4}%
+\contentsline {chapter}{\numberline {12}Resultados}{42}{chapter.12}%
+\contentsline {section}{\numberline {12.1}Conectividad y estabilidad}{42}{section.12.1}%
+\contentsline {section}{\numberline {12.2}Rendimiento del filtro de media m\'ovil}{42}{section.12.2}%
+\contentsline {section}{\numberline {12.3}Consumo de recursos del backend}{42}{section.12.3}%
+\contentsline {section}{\numberline {12.4}Latencia de la comunicaci\'on}{43}{section.12.4}%
+\contentsline {section}{\numberline {12.5}Resultados de alertas}{43}{section.12.5}%
+\contentsline {section}{\numberline {12.6}Funcionamiento de la API REST}{43}{section.12.6}%
+\contentsline {section}{\numberline {12.7}Visualizaci\'on en frontend}{43}{section.12.7}%
+\contentsline {chapter}{\numberline {13}Discusi\'on}{45}{chapter.13}%
+\contentsline {section}{\numberline {13.1}Interpretaci\'on de los resultados}{45}{section.13.1}%
+\contentsline {section}{\numberline {13.2}Comparaci\'on con la bibliograf\'ia}{45}{section.13.2}%
+\contentsline {section}{\numberline {13.3}Fortalezas del sistema}{46}{section.13.3}%
+\contentsline {section}{\numberline {13.4}Debilidades y limitaciones}{46}{section.13.4}%
+\contentsline {chapter}{\numberline {14}Limitaciones del proyecto}{48}{chapter.14}%
+\contentsline {chapter}{\numberline {15}Trabajo futuro}{49}{chapter.15}%
+\contentsline {chapter}{\numberline {16}Conclusiones}{51}{chapter.16}%
+\contentsline {section}{\numberline {16.1}Cumplimiento de los objetivos}{51}{section.16.1}%
+\contentsline {section}{\numberline {16.2}Aportes del proyecto}{52}{section.16.2}%
+\contentsline {section}{\numberline {16.3}Consideraciones finales}{52}{section.16.3}%
+\contentsline {chapter}{Referencias}{53}{chapter*.9}%
+\contentsline {chapter}{\numberline {A}C\'odigo fuente del firmware del ESP32}{54}{appendix.1.Alph1}%
+\contentsline {chapter}{\numberline {B}Archivo docker-compose.yml}{63}{appendix.1.Alph2}%
+\contentsline {chapter}{\numberline {C}Configuraci\'on de Mosquitto}{65}{appendix.1.Alph3}%
+\contentsline {chapter}{\numberline {D}Esquema completo de la API REST}{66}{appendix.1.Alph4}%

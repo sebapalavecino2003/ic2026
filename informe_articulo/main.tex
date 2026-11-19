@@ -1,0 +1,352 @@
+\documentclass[11pt,a4paper]{article}
+
+% ====== PAQUETES ======
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{caption}
+\usepackage{natbib}
+\usepackage{ragged2e}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
+\bibliographystyle{apalike}
+\usepackage{enumitem}
+\setlist[itemize]{itemsep=0pt, topsep=4pt, parsep=0pt, partopsep=0pt}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\justifying
+
+% ====== CONFIGURACIÓN APA ======
+\geometry{top=2.5cm, bottom=2.5cm, left=3cm, right=3cm}
+\setlength{\parindent}{0.5cm}
+\setstretch{1.15}
+\setlength{\headheight}{14pt}
+
+\definecolor{codebg}{rgb}{0.95,0.95,0.95}
+\definecolor{codeframe}{rgb}{0.8,0.8,0.8}
+\lstdefinestyle{cppstyle}{
+  language=C++, backgroundcolor=\color{codebg}, basicstyle=\small\ttfamily,
+  breaklines=true, frame=single, rulecolor=\color{codeframe},
+  tabsize=2, numbers=left, numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue}, commentstyle=\color{green!60!black}, stringstyle=\color{red}
+}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=black,
+    urlcolor=blue
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\thepage}
+
+% ====== FORMATO DE SECCIONES ======
+\titleformat{\section}{\bfseries\normalsize}{\thesection.}{0.5em}{\uppercase}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.5em}{}
+
+% ====== PORTADA ======
+\title{\textbf{\LARGE NodeAlert IoT: Sistema de Monitoreo Ambiental Multinodo para la Detecci\'on Temprana de Temperatura, Gas y Llama}\\[1cm]
+\large Proyecto acad\'emico presentado en la Universidad Nacional de Rafaela\\[3cm]}
+
+\author{
+\Large Eloy Kirov, Francisco Alemandi, Palavecino Sebastian\\[0.5cm]
+\textit{Universidad Nacional de Rafaela (UNRaf)}\\
+\textit{Ingenier\'ia en Computaci\'on}\\[0.5cm]
+Docentes: Ing. Milton Pozzo, Ing. Matias Wanzenried\\[1cm]
+\textbf{26 de noviembre de 2025}
+}
+
+\date{}
+
+% ====== DOCUMENTO ======
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+\vspace{-0.5cm}
+\begin{center}
+\rule{8cm}{0.4pt}
+\end{center}
+\vspace{0.3cm}
+
+\section{Resumen}
+En el presente trabajo se describe el dise\~no, la implementaci\'on y la validaci\'on de \textit{NodeAlert IoT}, un sistema de monitoreo ambiental distribuido y multinodo basado en microcontroladores ESP32 equipados con sensores de temperatura (DHT11), gas (MQ-2) y llama, desplegados en distintos sectores de una instalaci\'on industrial o habitacional. Cada nodo perif\'erico se comunica mediante el protocolo MQTT con una Raspberry Pi que act\'ua como servidor central, sobre la cual se ejecutan Node-RED para el procesamiento de datos, SQLite como motor de persistencia y un dashboard desarrollado en React para la visualizaci\'on. El sistema se estructura conforme al modelo arquitect\'onico de tres capas \citep{rivera2024} y se despliega sobre Docker Compose, incorporando un broker Mosquitto con autenticaci\'on, una API REST para la consulta de telemetr\'ia y la configuraci\'on remota de umbrales por nodo. Los resultados experimentales confirman la correcta detecci\'on de condiciones de riesgo y la operaci\'on estable del sistema durante per\'iodos prolongados.
+
+\textbf{Palabras clave:} IoT, ESP32, MQTT, Node-RED, monitoreo ambiental, sistemas embebidos, multinodo.
+
+\vspace{0.5cm}
+\section{Abstract}
+This paper describes the design, implementation and validation of \textit{NodeAlert IoT}, a distributed multi-node environmental monitoring system based on ESP32 microcontrollers equipped with temperature (DHT11), gas (MQ-2) and flame sensors, deployed across different sectors of an industrial or residential facility. Each peripheral node communicates via the MQTT protocol with a Raspberry Pi acting as a central server, running Node-RED for data processing, SQLite as the persistence engine and a React-based dashboard for visualization. The system follows the three-layer architectural model \citep{rivera2024} and is deployed on Docker Compose, incorporating an authenticated Mosquitto broker, a REST API for telemetry queries and per-node remote threshold configuration. Experimental results confirm correct risk condition detection and stable system operation over extended periods.
+
+\textbf{Keywords:} IoT, ESP32, MQTT, Node-RED, environmental monitoring, embedded systems, multi-node.
+
+\section{Introducci\'on}
+La detecci\'on temprana de incendios y fugas de gas constituye un desaf\'io cr\'itico en entornos habitacionales e industriales. Los detectores convencionales, al operar de forma aislada, carecen de capacidades de supervisi\'on remota y registro hist\'orico de datos, lo que limita significativamente su utilidad en contextos donde la toma de decisiones informada y oportuna resulta esencial. En este contexto, el paradigma del Internet de las Cosas (IoT) ofrece la posibilidad de integrar sensores a la red para monitorear variables ambientales en tiempo real y ejecutar acciones automatizadas \citep{rivera2024}.
+
+\textit{NodeAlert IoT} se concibe como un sistema de monitoreo ambiental multinodo que integra m\'ultiples unidades ESP32 con sensores de temperatura (DHT11), gas (MQ-2) y llama, cada una instalada en un sector distinto (cocina, dep\'osito, sala de m\'aquinas, entre otros). Los datos adquiridos se transmiten mediante MQTT hacia un broker Mosquitto central, son procesados por Node-RED, almacenados en SQLite y visualizados en un dashboard web desarrollado en React que permite consultar el estado de todos los nodos, configurar umbrales por sector y enviar comandos individuales.
+
+El presente informe expone el dise\~no, la implementaci\'on y los resultados de las pruebas del sistema, organizado en secciones que abordan la arquitectura, el hardware, el software, los protocolos de comunicaci\'on y la validaci\'on experimental.
+
+\section{Estado del Arte}
+Los sistemas de monitoreo ambiental han evolucionado desde detectores anal\'ogicos aislados hacia redes de sensores inal\'ambricos (WSN) plenamente integradas en el ecosistema IoT. El modelo de tres capas (percepci\'on, red y aplicaci\'on) se ha consolidado como el marco de referencia m\'as difundido en la literatura especializada \citep{rivera2024}. En NodeAlert, las capas de red y aplicaci\'on convergen en una \'unica Raspberry Pi que ejecuta Mosquitto, Node-RED y el frontend React, lo que simplifica la infraestructura sin sacrificar funcionalidad.
+
+\subsection{Sistemas Embebidos en IoT}
+Los sistemas embebidos constituyen el fundamento hardware del IoT, al integrar componentes de c\'omputo y software para cumplir funciones espec\'ificas con recursos limitados. El ESP32, con su procesador dual-core Tensilica Xtensa LX6 y conectividad WiFi integrada, resulta representativo de esta categor\'ia de dispositivos. \citet{cayssials2014} se\~nala que la flexibilidad en el dise\~no e implementaci\'on de sistemas embebidos modernos debe contemplar la comunicaci\'on con dispositivos externos tanto cableados como inal\'ambricos, aspecto que constituye un eje central en NodeAlert.
+
+\subsection{Protocolos de Comunicaci\'on para IoT}
+MQTT se ha establecido como el protocolo de facto en el \'ambito del IoT debido a su reducido overhead y su modelo de publicaci\'on/suscripci\'on, que desacopla eficientemente a productores y consumidores de datos. \citet{rivera2024} destaca que la capa de red en IoT tiene la responsabilidad de recolectar los datos provenientes de los sensores y convertirlos a formato digital para su transmisi\'on, funci\'on que en NodeAlert cumple el broker Mosquitto.
+
+\subsection{Plataformas de Procesamiento y Visualizaci\'on}
+Node-RED proporciona un entorno de programaci\'on visual orientado a flujos que facilita la conexi\'on entre dispositivos y APIs, mientras que React posibilita la construcci\'on de interfaces de usuario din\'amicas y reactivas. La combinaci\'on de ambas herramientas, junto con SQLite como motor de persistencia liviano, conforma una pila tecnol\'ogica eficiente y adecuada para proyectos IoT de alcance tanto acad\'emico como industrial.
+
+\section{Arquitectura General del Sistema}
+La arquitectura de NodeAlert IoT se fundamenta en el modelo de tres capas descrito por \citet{rivera2024}:
+
+\begin{enumerate}[label=\alph*)]
+    \item \textbf{Capa de Percepci\'on:} Conformada por m\'ultiples nodos ESP32 con sensores DHT11 (temperatura y humedad), MQ-2 (gas) y de llama, cada uno instalado en un sector diferente (cocina, dep\'osito, sala de servidores, entre otros). Cada nodo realiza la lectura de los sensores, aplica un filtro de media m\'ovil (N=5) y publica los datos mediante MQTT empleando un identificador \'unico.
+    \item \textbf{Capa de Red y Aplicaci\'on:} Una Raspberry Pi central ejecuta Mosquitto como broker MQTT, Node-RED para la l\'ogica de procesamiento y exposici\'on de la API REST, y el frontend React para la visualizaci\'on. Node-RED almacena los datos en SQLite y expone endpoints HTTP que consume el dashboard.
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{figuras/fig-arquitectura.png}
+    \caption{Arquitectura general del sistema NodeAlert IoT.}
+    \label{fig:arquitectura}
+\end{figure}
+
+Todos los servicios (Mosquitto, Node-RED, frontend) se ejecutan en contenedores Docker sobre la Raspberry Pi, comunicados a trav\'es de una red bridge interna. Esta estrategia de contenerizaci\'on se adopt\'o con el fin de garantizar la portabilidad, el aislamiento de dependencias y la reproducibilidad del entorno de despliegue.
+
+\subsection{Flujo de Datos}
+El flujo de datos a trav\'es del sistema sigue la secuencia que se detalla a continuaci\'on:
+\begin{enumerate}
+    \item Cada ESP32 realiza la lectura de los sensores cada 10 segundos y aplica el filtro de media m\'ovil.
+    \item Los datos se publican en formato JSON en el t\'opico \texttt{nodealert/\{device\_id\}/telemetry} con nivel de QoS 2 hacia la Raspberry Pi.
+    \item Mosquitto recibe los mensajes provenientes de todos los nodos y los entrega a Node-RED.
+    \item Node-RED procesa la informaci\'on, la almacena en SQLite identificando el nodo de origen y eval\'ua las reglas de alerta definidas para cada sector.
+    \item El frontend React, servido desde la Raspberry Pi, consulta peri\'odicamente la API REST y muestra el estado consolidado de todos los sectores.
+\end{enumerate}
+
+\section{Dise\~no de Hardware}
+El sistema se compone de m\'ultiples nodos perif\'ericos ESP32 destinados a la adquisici\'on de datos, cada uno ubicado en un sector distinto, y una Raspberry Pi que oficia como servidor central alojando todos los servicios de red y aplicaci\'on. La selecci\'on del ESP32 como plataforma de sensado respondi\'o a su bajo costo, su conectividad WiFi integrada y su amplio soporte en la comunidad de desarrollo, atributos que lo convierten en una opci\'on adecuada para prototipos IoT distribuidos.
+
+\subsection{Nodo Perif\'erico ESP32}
+Cada nodo se articula en torno a un ESP32 Dev Board, el cual integra un procesador dual-core Tensilica Xtensa LX6 con frecuencia de operaci\'on de hasta 240 MHz, conectividad WiFi y Bluetooth, y un ADC de 12 bits. Cada nodo se identifica de forma \'unica mediante un identificador de dispositivo (\texttt{device\_id}) que lo asocia al sector donde se encuentra instalado.
+
+\begin{itemize}
+    \item \textbf{DHT11:} Sensor digital de temperatura (rango de 0 a 50 $^{\circ}$C, precisi\'on de $\pm 2^{\circ}$C) y humedad relativa (20 a 80\%). Se seleccion\'o por su interfaz digital simple y su adecuaci\'on a aplicaciones de monitoreo ambiental de bajo costo.
+    \item \textbf{MQ-2:} Sensor de gases inflamables (GLP, propano, metano, humo) con salida anal\'ogica le\'ida mediante el ADC del ESP32. Su sensibilidad a m\'ultiples gases lo hace apropiado para la detecci\'on temprana de fugas en entornos dom\'esticos e industriales.
+    \item \textbf{Sensor de llama:} Detecta radiaci\'on infrarroja en el rango espectral de 760 a 1100 nm. Su salida anal\'ogica presenta una relaci\'on inversa con la intensidad de la llama, lo que permite discriminar niveles de riesgo.
+    \item \textbf{Buzzer:} Actuador sonoro de 5 V conectado al GPIO 26, empleado como mecanismo de alerta local en el nodo cuando se detectan condiciones de peligro.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.8\textwidth}{\centering\vspace{2.5cm}[Diagrama esquem\'atico: pines del ESP32 conectados a DHT11, MQ-2, sensor de llama y buzzer]\vspace{2.5cm}}}
+    \caption{Diagrama esquem\'atico del nodo perif\'erico.}
+    \label{fig:esquematico}
+\end{figure}
+
+\subsection{Servidor Central: Raspberry Pi}
+La Raspberry Pi se desempe\~na como servidor central del sistema, ejecutando Mosquitto, Node-RED, SQLite y el frontend React servido mediante Nginx, todos ellos implementados como contenedores Docker orquestados con Docker Compose. Esta decisi\'on arquitect\'onica se fundamenta en la necesidad de contar con una plataforma de c\'omputo de bajo consumo energ\'etico pero con capacidad suficiente para gestionar las comunicaciones MQTT, el procesamiento de datos y la interfaz web de manera concurrente.
+
+\section{Dise\~no de Software y Firmware}
+
+\subsection{Firmware ESP32}
+El firmware se desarroll\'o en el entorno Arduino IDE y es id\'entico para todos los nodos; cada ESP32 se configura con un \texttt{device\_id} \'unico que lo identifica en el sistema. El ciclo de ejecuci\'on sigue una secuencia lineal que comprende: conexi\'on a la red WiFi y al broker MQTT, lectura de los sensores, aplicaci\'on del filtro de media m\'ovil, publicaci\'on de la telemetr\'ia y escucha de comandos entrantes.
+
+\begin{itemize}
+    \item \textbf{Filtro de media m\'ovil:} Se implement\'o un filtro de media m\'ovil simple con ventana de 5 muestras con el objetivo de suavizar las fluctuaciones transitorias inherentes a las lecturas de los sensores anal\'ogicos:
+    \[
+    \bar{x}[n] = \frac{1}{5} \sum_{k=0}^{4} x[n-k]
+    \]
+    \item \textbf{Clasificaci\'on:} Cada variable monitoreada se clasifica en tres categor\'ias (\'optimo, advertencia o peligro) seg\'un umbrales predefinidos que pueden ser modificados de forma remota.
+    \item \textbf{Comandos:} El ESP32 se suscribe al t\'opico \texttt{nodealert/\{id\}/commands} y soporta los comandos REBOOT, BUZZER\_ON, BUZZER\_OFF y AUTO, que permiten controlar el comportamiento del nodo de forma remota.
+    \item \textbf{Reconexi\'on:} Ante una p\'erdida de conectividad WiFi, el firmware intenta la reconexi\'on hasta 60 veces consecutivas; transcurrido ese l\'imite sin \'exito, el dispositivo se reinicia autom\'aticamente.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\textwidth]{figuras/dfd_firmware.png}
+    \caption{Diagrama de flujo del firmware del ESP32.}
+    \label{fig:dfd_firmware}
+\end{figure}
+
+\subsection{Node-RED (Backend en Raspberry Pi)}
+Node-RED se ejecuta como contenedor Docker en la Raspberry Pi. Los flujos se generan autom\'aticamente mediante el script \texttt{generate-flows.js} y est\'an dise\~nados para manejar m\'ultiples nodos en paralelo. Los componentes principales del backend son los siguientes:
+\begin{itemize}
+    \item Inicializaci\'on autom\'atica de las tablas de la base de datos SQLite al iniciar el contenedor.
+    \item Procesamiento de telemetr\'ia: recepci\'on de mensajes MQTT provenientes de todos los nodos, inserci\'on en la base de datos con identificaci\'on del sector de origen y evaluaci\'on de alertas por dispositivo.
+    \item Detector de nodos offline mediante un mecanismo de heartbeat configurado con un intervalo de 30 segundos por nodo.
+    \item Limpieza peri\'odica de datos hist\'oricos cada 24 horas para evitar el crecimiento ilimitado de la base de datos.
+    \item API REST que expone los endpoints \texttt{/health}, \texttt{/nodes}, \texttt{/telemetry/:id}, \texttt{/config/:id} y \texttt{/commands/:id}.
+\end{itemize}
+
+\subsection{Frontend React (servido desde la RPi)}
+La interfaz de usuario se desarroll\'o en React y se organiza en tres p\'aginas principales:
+\begin{enumerate}
+    \item \textbf{Dashboard:} Presenta un resumen general con tarjetas que muestran las \'ultimas lecturas de todos los sectores, permitiendo una visi\'on r\'apida del estado global del sistema.
+    \item \textbf{Nodes:} Listado completo de dispositivos con indicaci\'on del sector al que pertenecen, estado de conexi\'on y botones para el env\'io de comandos individuales.
+    \item \textbf{NodeDetail:} Visualizaci\'on detallada de la evoluci\'on temporal de las variables mediante gr\'aficos implementados con Recharts, junto con la configuraci\'on y modificaci\'on de umbrales por nodo.
+\end{enumerate}
+
+\section{Comunicaci\'on y Protocolos}
+NodeAlert emplea MQTT como protocolo de comunicaci\'on central entre los ESP32 y la Raspberry Pi, siguiendo las recomendaciones de \citet{rivera2024} para la capa de red en arquitecturas IoT. La elecci\'on de MQTT respondi\'o a su eficiencia en t\'erminos de ancho de banda, su modelo asincr\'onico y su capacidad para mantener conexiones persistentes con dispositivos de recursos limitados.
+
+\subsection{Protocolo MQTT}
+MQTT opera bajo un modelo de publicaci\'on/suscripci\'on mediado por un broker central (Mosquitto). Se definieron los siguientes t\'opicos para la organizaci\'on de los mensajes:
+\begin{itemize}
+    \item \texttt{nodealert/\{device\_id\}/telemetry} (QoS 2): Transmisi\'on peri\'odica de las lecturas de los sensores.
+    \item \texttt{nodealert/\{device\_id\}/events} (QoS 2): Notificaci\'on de eventos cr\'iticos o condiciones de peligro inminente.
+    \item \texttt{nodealert/\{device\_id\}/commands} (QoS 2): Canal de retorno para el env\'io de comandos remotos desde el dashboard hacia el nodo.
+\end{itemize}
+
+El nivel de QoS 2 se adopt\'o para garantizar la entrega exactamente una vez de los mensajes cr\'iticos, evitando tanto la p\'erdida como la duplicaci\'on de informaci\'on.
+
+\subsection{Seguridad}
+Mosquitto se configur\'o con autenticaci\'on obligatoria mediante nombre de usuario y contrase\~na, complementada con listas de control de acceso (ACL). Se definieron dos usuarios: \texttt{nodealert} (asignado a Node-RED, con permisos completos sobre todos los t\'opicos) y \texttt{nodealert\_esp32} (asignado a los ESP32, con permiso \texttt{readwrite} sobre la jerarqu\'ia \texttt{nodealert/\#}).
+
+\subsection{Serializaci\'on}
+Los mensajes se intercambian en formato JSON, seleccionado por su simplicidad de parseo tanto en el ESP32 como en Node-RED y React. Cada trama de telemetr\'ia contiene los campos \texttt{device\_id}, \texttt{temperature}, \texttt{humidity}, \texttt{gas\_ppm}, \texttt{flame}, la clasificaci\'on de alerta correspondiente y un timestamp de generaci\'on.
+
+\subsection{API REST (desde la RPi)}
+Node-RED expone una API REST que constituye la interfaz de comunicaci\'on entre el backend y el frontend. Los endpoints implementados son los siguientes:
+\begin{itemize}
+    \item \texttt{GET /api/health} -- verificaci\'on del estado del servidor.
+    \item \texttt{GET /api/nodes} -- obtenci\'on de la lista de dispositivos registrados.
+    \item \texttt{GET /api/telemetry/:id} -- consulta de las \'ultimas lecturas de un nodo espec\'ifico.
+    \item \texttt{GET /api/config/:id} -- recuperaci\'on de la configuraci\'on actual de umbrales de un nodo.
+    \item \texttt{POST /api/config/:id} -- actualizaci\'on de los umbrales de alerta de un nodo.
+    \item \texttt{POST /api/commands/:id} -- env\'io de comandos a un nodo particular.
+\end{itemize}
+
+\section{Metodolog\'\i{}a de Desarrollo}
+Se adopt\'o un enfoque incremental y modular con el prop\'osito de validar cada componente de forma independiente antes de proceder a la integraci\'on final del sistema.
+
+\subsection{Fase 1: Investigaci\'on y Selecci\'on}
+Se realiz\'o un an\'alisis de los requisitos de detecci\'on y comunicaci\'on, a partir del cual se seleccionaron los sensores, el microcontrolador y las plataformas de software. Para el desarrollo del firmware, la generaci\'on de los flujos de Node-RED y la elaboraci\'on del presente informe se utiliz\'o OpenCode \citep{opencode2025}, un asistente de inteligencia artificial especializado en tareas de ingenier\'ia de software.
+
+\subsection{Fase 2: Prototipado del Firmware}
+Se implement\'o el ciclo de lectura-publicaci\'on en el ESP32, incorporando el filtro de media m\'ovil y el sistema de clasificaci\'on de alertas descrito previamente.
+
+\subsection{Fase 3: Infraestructura de Red en Raspberry Pi}
+Se desplegaron Mosquitto, Node-RED y el frontend React como contenedores Docker en la Raspberry Pi, y se configuraron los t\'opicos MQTT, el sistema de autenticaci\'on y la base de datos SQLite.
+
+\subsection{Fase 4: Desarrollo del Backend y Frontend}
+Se implementaron los flujos de Node-RED, el esquema de la base de datos SQLite y el dashboard React con gr\'aficos de evoluci\'on temporal y controles remotos.
+
+\subsection{Fase 5: Integraci\'on y Pruebas}
+Se realizaron pruebas de latencia, tolerancia a fallos de conectividad y estabilidad del sistema completo durante un per\'iodo de 72 horas de operaci\'on continua.
+
+\section{Funcionamiento y L\'ogica de Control}
+
+\subsection{Ciclo de Operaci\'on del Nodo}
+El ciclo de operaci\'on de cada nodo ESP32 sigue la secuencia que se describe a continuaci\'on:
+\begin{enumerate}
+    \item Establecimiento de la conexi\'on WiFi y posterior conexi\'on al broker MQTT.
+    \item Lectura de los sensores: temperatura y humedad (DHT11), concentraci\'on de gas (MQ-2 mediante ADC) y detecci\'on de llama (ADC).
+    \item Aplicaci\'on del filtro de media m\'ovil (N=5) a las lecturas obtenidas.
+    \item Clasificaci\'on del estado de cada variable en las categor\'ias \'optimo, advertencia o peligro.
+    \item Publicaci\'on del mensaje JSON de telemetr\'ia en el t\'opico correspondiente.
+    \item Escucha de comandos entrantes en el t\'opico de comandos.
+    \item Activaci\'on del buzzer en caso de detectarse una condici\'on de peligro.
+\end{enumerate}
+
+\subsection{Evaluaci\'on de Alertas}
+Node-RED compara cada lectura recibida contra los umbrales configurados, los cuales poseen valores globales por defecto pero son personalizables por nodo. Cuando una lectura supera el umbral establecido, se genera un evento en la tabla \texttt{alerts} de la base de datos, registrando la severidad y el timestamp correspondientes.
+
+\subsection{Comandos Remotos}
+El sistema admite el env\'io de comandos desde el dashboard, los cuales se publican en el t\'opico \texttt{commands} del nodo destino. Los comandos implementados son: REBOOT (reinicia el ESP32), BUZZER\_ON (activa el buzzer de forma forzada), BUZZER\_OFF (desactiva el buzzer) y AUTO (restaura el modo de control autom\'atico basado en los umbrales).
+
+\section{Concurrencia y Optimizaci\'on Energ\'etica}
+
+\subsection{Arquitectura de Ciclo \'Unico}
+El firmware del ESP32 implementa un ciclo secuencial sin sistema operativo en tiempo real (RTOS). Cada 10 segundos se ejecutan secuencialmente las etapas de lectura, procesamiento, publicaci\'on y retorno. Dado que no existen tareas concurrentes en el microcontrolador, no se requieren primitivas de sincronizaci\'on internas.
+
+\subsection{Concurrencia Distribuida}
+La concurrencia emerge de forma natural en la topolog\'ia multinodo del sistema: cada ESP32 publica datos cada 10 segundos de manera independiente, el broker Mosquitto gestiona los mensajes de todos los nodos de forma asincr\'onica y Node-RED procesa las lecturas concurrentemente con las solicitudes del frontend React.
+
+\subsection{Eficiencia Energ\'etica}
+Si bien el proyecto en su estado actual no implementa modos de bajo consumo como \textit{deep sleep}, se reconoce la importancia de esta funcionalidad como l\'inea de trabajo futuro, particularmente para escenarios de operaci\'on con bater\'ia. \citet{cayssials2014} destaca que la eficiencia energ\'etica constituye una m\'etrica clave en el dise\~no de sistemas embebidos, y que tanto la selecci\'on del hardware como la gesti\'on de estados de reposo son factores determinantes para la reducci\'on del consumo energ\'etico.
+
+\section{Resultados y Validaci\'on}
+
+\begin{table}[H]
+    \centering
+    \caption{Resultados de las pruebas de generaci\'on de alertas.}
+    \label{tab:alertas}
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{Tipo de alerta} & \textbf{Umbral} & \textbf{Pruebas realizadas} & \textbf{Tasa de \'exito} \\
+        \midrule
+        Temperatura cr\'itica & $>50^{\circ}$C & 5 & 100\% \\
+        Gas cr\'itico & $>4000$ ppm & 5 & 100\% \\
+        Detecci\'on de llama & $<500$ ADC & 5 & 100\% \\
+        Temperatura en advertencia & $>40^{\circ}$C & 5 & 100\% \\
+        Gas en advertencia & $>1000$ ppm & 5 & 100\% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.85\textwidth}{\centering\vspace{2.5cm}[Captura de pantalla del Dashboard con tarjetas de temperatura, gas, llama y estado de alertas]\vspace{2.5cm}}}
+    \caption{Dashboard principal del sistema NodeAlert.}
+    \label{fig:dashboard}
+\end{figure}
+
+A continuaci\'on se resumen los resultados obtenidos durante la fase de validaci\'on experimental:
+
+\begin{itemize}
+    \item \textbf{Estabilidad:} El ESP32 mantuvo la conexi\'on WiFi y MQTT de forma estable durante 72 horas de pruebas continuas, sin p\'erdidas de conectividad significativas.
+    \item \textbf{Latencia:} El tiempo transcurrido entre la publicaci\'on de un mensaje MQTT y su recepci\'on en Node-RED se mantuvo por debajo de 100 ms en condiciones de red local.
+    \item \textbf{Consumo de recursos:} Node-RED present\'o un uso de memoria RAM de entre 80 y 120 MB. La base de datos SQLite con 1000 registros almacenados ocup\'o menos de 1 MB de espacio en disco.
+    \item \textbf{API REST:} Todos los endpoints implementados respondieron con los c\'odigos HTTP correspondientes, y la interfaz web reflej\'o las actualizaciones de datos en tiempo real.
+\end{itemize}
+
+\section{Conclusiones}
+
+Se cumplieron la totalidad de los objetivos planteados para el proyecto. Se logr\'o desarrollar un sistema de monitoreo ambiental multinodo funcional que integra m\'ultiples ESP32 con sensores, cada uno instalado en un sector distinto, y una Raspberry Pi como servidor central que ejecuta Mosquitto, Node-RED, SQLite y React, con capacidad de generar alertas configurables y enviar comandos remotos individuales. La arquitectura contenerizada en la Raspberry Pi facilita el mantenimiento y la replicaci\'on del sistema a nuevos sectores.
+
+\textbf{Limitaciones:} No se implement\'o cifrado TLS en las comunicaciones MQTT. El ESP32 no dispone de almacenamiento local de datos en caso de p\'erdida de conectividad con el servidor central.
+
+\textbf{Trabajo futuro:} Incorporar cifrado TLS/SSL en las comunicaciones, implementar almacenamiento local en el ESP32 con sincronizaci\'on diferida, agregar modo \textit{deep sleep} para operaci\'on con bater\'ia, desarrollar notificaciones push y explorar la clasificaci\'on de alertas mediante t\'ecnicas de inteligencia artificial.
+
+\section{Trabajo Futuro}
+La arquitectura de NodeAlert IoT establece las bases para diversas l\'ineas de expansi\'on y mejora:
+
+\begin{itemize}
+    \item \textbf{Inteligencia Artificial:} Se propone implementar modelos predictivos que permitan anticipar condiciones de riesgo a partir de patrones hist\'oricos de temperatura y concentraci\'on de gas, superando las limitaciones de los umbrales fijos actuales.
+    \item \textbf{Seguridad:} Incorporar TLS/SSL en las comunicaciones MQTT con el fin de proteger la confidencialidad e integridad de los datos en entornos productivos.
+    \item \textbf{Eficiencia energ\'etica:} Implementar el modo \textit{deep sleep} en el ESP32 para extender la autonom\'ia de los nodos alimentados por bater\'ias o paneles solares.
+    \item \textbf{Escalabilidad:} Realizar pruebas con una cantidad significativa de nodos ESP32 en operaci\'on simult\'anea para validar el comportamiento del broker y la base de datos bajo condiciones de carga representativas.
+\end{itemize}
+
+\section{Referencias Bibliogr\'aficas}
+
+\begin{thebibliography}{99}
+
+\bibitem[Cayssials(2014)]{cayssials2014}
+Cayssials, R. (2014). \textit{Sistemas Embebidos en FPGA}. Alfaomega Grupo Editor Argentino.
+
+\bibitem[Rivera Berr\'io and Lopera S\'anchez(2024)]{rivera2024}
+Rivera Berr\'io, J. G. y Lopera S\'anchez, R. A. (2024). \textit{Internet de las Cosas}. Fondo Editorial RED Descartes.
+
+\bibitem[OpenCode(2025)]{opencode2025}
+OpenCode (2025). \textit{OpenCode: AI-powered software engineering assistant}. \url{https://opencode.ai}.
+
+\end{thebibliography}
+
+\end{document}

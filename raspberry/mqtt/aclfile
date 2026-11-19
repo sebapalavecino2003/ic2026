@@ -1,0 +1,5 @@
+user nodealert
+topic readwrite nodealert/#
+
+user nodealert_esp32
+topic readwrite nodealert/#
