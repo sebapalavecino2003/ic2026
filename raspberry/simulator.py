@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import argparse, json, random, subprocess, time
+import argparse, json, os, random, subprocess, time
 def make_payload(fail=False):
     if fail:
         return {"device_id":"nodealert-luz01","presencia":random.choice([0,1]),"rele_canal1":random.choice([0,1])}
@@ -13,6 +13,6 @@ def main():
         fail=random.random()<a.fail_rate
         p=make_payload(fail)
         print(p)
-        publish(a.broker,a.port,"nodealert_esp32","test_password","nodealert/nodealert-luz01/telemetry",p)
+        publish(a.broker,a.port,"nodealert_esp32",os.environ.get("MQTT_PASS","TU_PASSWORD_MQTT"),"nodealert/nodealert-luz01/telemetry",p)
         n+=1; time.sleep(a.interval)
 if __name__=="__main__": main()
