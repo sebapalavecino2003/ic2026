@@ -1,0 +1,1964 @@
+Skip to content
+alem123q
+202611-IC2-palavecino-kirov-alemandi
+Repository navigation
+Code
+Issues
+Pull requests
+1
+ (1)
+Agents
+Actions
+Projects
+Wiki
+Security and quality
+Insights
+Settings
+Backend: broker MQTT, Node-RED y simulador- #4
+#4
+Open
+EloyKirov
+wants to merge 12 commits into
+alem123q:main
+from
+EloyKirov:backend/node-red
++2581
+-3
+Lines changed: 2581 additions & 3 deletions
+Conversation0 (0)
+Commits12 (12)
+Checks0 (0)
+Files changed17 (17)
+Pull request toolbar
+Open
+Backend: broker MQTT, Node-RED y simulador
+#4
+EloyKirov
+wants to merge 12 commits into
+alem123q:main
+from
+EloyKirov:backend/node-red
+0 / 17 viewed
+0 of 17 files viewed
+Customizable line height
+The default line height has been increased for improved accessibility. You can choose to enable a more compact line height from the view settings menu.
+
+Filter files…
+File tree
+raspberry
+mqtt
+aclfile
+Dockerfile
+entrypoint.sh
+mosquitto.conf
+nodered
+data
+flows.json
+package.json
+settings.js
+Dockerfile
+start.sh
+.env.example
+docker-compose.yml
+generate-flows.js
+README.md
+requirements.txt
+simulator.py
+.gitattributes
+.gitignore
+‎raspberry/mqtt/aclfile‎
++9
+Lines changed: 9 additions & 0 deletions
+Original file line number	Diff line number	Diff line change
+# Node-RED: lee la telemetria de todos los nodos y les manda comandos
+user nodealert
+topic read nodealert/+/telemetry
+topic write nodealert/+/commands
+# ESP32 (firmware control-luz) y simulator.py: publica telemetria y escucha comandos
+user nodealert_esp32
+topic write nodealert/+/telemetry
+topic read nodealert/+/commands
+‎raspberry/mqtt/Dockerfile‎
++12
+Lines changed: 12 additions & 0 deletions
+Original file line number	Diff line number	Diff line change
+FROM eclipse-mosquitto:2.0.20
+COPY mosquitto.conf /mosquitto/config/mosquitto.conf
+COPY aclfile /mosquitto/config/aclfile
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh && \
+    chmod 0700 /mosquitto/config/aclfile && \
+    chown 1883:1883 /mosquitto/config/aclfile
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["/usr/sbin/mosquitto", "-c", "/mosquitto/config/mosquitto.conf"]
+‎raspberry/mqtt/entrypoint.sh‎
++19
+Lines changed: 19 additions & 0 deletions
+Original file line number	Diff line number	Diff line change
+#!/bin/sh
+# Crea los usuarios del broker en cada arranque con las claves de raspberry/.env.
+# Si falta alguna, el contenedor no arranca (mejor que arrancar con una clave por defecto).
+set -e
+: "${MQTT_NODERED_PASS:?Falta MQTT_NODERED_PASS: copia raspberry/.env.example como raspberry/.env}"
+: "${MQTT_ESP32_PASS:?Falta MQTT_ESP32_PASS: copia raspberry/.env.example como raspberry/.env}"
+PASSWORDFILE=/mosquitto/config/passwordfile
+mosquitto_passwd -c -b "$PASSWORDFILE" nodealert "$MQTT_NODERED_PASS"
+mosquitto_passwd -b "$PASSWORDFILE" nodealert_esp32 "$MQTT_ESP32_PASS"
+chown 1883:1883 "$PASSWORDFILE"
+chmod 0700 "$PASSWORDFILE"
+echo "Usuarios del broker creados: 'nodealert' (Node-RED) y 'nodealert_esp32' (ESP32)"
+chown -R 1883:1883 /mosquitto/data 2>/dev/null || true
+exec "$@"
+‎raspberry/mqtt/mosquitto.conf‎
++11
+Lines changed: 11 additions & 0 deletions
+Original file line number	Diff line number	Diff line change
+persistence true
+persistence_location /mosquitto/data/
+log_dest stdout
+log_type all
+connection_messages true
+log_timestamp true
+listener 1883
+allow_anonymous false
+password_file /mosquitto/config/passwordfile
+acl_file /mosquitto/config/aclfile
+‎raspberry/nodered/data/flows.json‎
++1185
+Lines changed: 1185 additions & 0 deletions
+Original file line number	Diff line number	Diff line change
+[
+  {
+    "id": "db_main",
+    "type": "sqlitedb",
+    "wires": [],
+    "name": "nodered.db",
+    "db": "/data/nodered.db",
+    "mode": "READ_WRITE_CREATE"
+  },
+  {
+    "id": "br_main",
+    "type": "mqtt-broker",
+    "wires": [],
+    "name": "Mosquitto local",
+    "broker": "mosquitto",
+    "port": "1883",
+    "clientid": "",
+    "usetls": false,
+    "compatmode": true,
+    "keepalive": "60",
+    "cleansession": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": ""
+  },
+  {
+    "id": "n0003",
+    "type": "tab",
+    "wires": [],
+    "label": "Init DB",
+    "z": "z_init"
+  },
+  {
+    "id": "n0004",
+    "type": "inject",
+    "wires": [
+      [
+        "n0005"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Init DB",
+    "props": [],
+    "repeat": "",
+    "crontab": "",
+    "once": true,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date"
+  },
+  {
+    "id": "n0005",
+    "type": "function",
+    "wires": [
+      [
+        "n0006"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Create tables",
+    "func": "msg.topic = `\nCREATE TABLE IF NOT EXISTS nodes (node_id TEXT PRIMARY KEY,name TEXT,is_online INTEGER DEFAULT 0,last_seen DATETIME,hidden INTEGER DEFAULT 0);\nCREATE TABLE IF NOT EXISTS telemetry (id INTEGER PRIMARY KEY AUTOINCREMENT,node_id TEXT,temperature REAL,gas INTEGER,flame INTEGER,temp_status TEXT,gas_status TEXT,flame_status TEXT,presencia INTEGER,luz_ventana REAL,luz_aula REAL,temp_c REAL,humedad REAL,rele INTEGER,timestamp DATETIME);\nCREATE INDEX IF NOT EXISTS idx_telemetry_node_ts ON telemetry(node_id, timestamp);\nCREATE TABLE IF NOT EXISTS node_config (node_id TEXT PRIMARY KEY,temperature_critical REAL DEFAULT 50,gas_warning INTEGER DEFAULT 3000,gas_critical INTEGER DEFAULT 4000,buzzer_enabled INTEGER DEFAULT 1,flame_critical_value REAL DEFAULT 500,flame_critical_severity TEXT DEFAULT 'critical',flame_critical_message TEXT DEFAULT 'Llama detectada',gas_critical_value REAL DEFAULT 2000,gas_critical_severity TEXT DEFAULT 'high',gas_critical_message TEXT DEFAULT 'Nivel de gas peligroso',temp_critical_value REAL DEFAULT 50,temp_critical_severity TEXT DEFAULT 'high',temp_critical_message TEXT DEFAULT 'Temperatura peligrosa',updated_at DATETIME);\n`;return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0006",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0007"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Execute init",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n0007",
+    "type": "function",
+    "wires": [
+      [
+        "n0008"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Migrate schema",
+    "func": "msg.topic=\"SELECT COUNT(*) as cnt FROM pragma_table_info('nodes') WHERE name='hidden'\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0008",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0009"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Check if hidden col exists",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n0009",
+    "type": "function",
+    "wires": [
+      [
+        "n000a"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Add hidden if missing",
+    "func": "var exists=(msg.payload||[])[0];msg.topic=exists&&exists.cnt>0?\"SELECT 1\":\"ALTER TABLE nodes ADD COLUMN hidden INTEGER DEFAULT 0\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n000a",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n000b"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Alter or skip",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n000b",
+    "type": "function",
+    "wires": [
+      [
+        "n000c"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Set hidden default",
+    "func": "msg.topic=\"UPDATE nodes SET hidden=0 WHERE hidden IS NULL\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n000c",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n000d"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Update hidden",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n000d",
+    "type": "function",
+    "wires": [
+      [
+        "n000e"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Migrate telemetry schema",
+    "func": "msg.topic=\"SELECT COUNT(*) as cnt FROM pragma_table_info('telemetry') WHERE name='temp_status'\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n000e",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n000f"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Check if status cols exist",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n000f",
+    "type": "function",
+    "wires": [
+      [
+        "n0010"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Add status cols if missing",
+    "func": "var exists=(msg.payload||[])[0];if(exists&&exists.cnt>0)msg.topic=\"SELECT 1\";else msg.topic=\"ALTER TABLE telemetry ADD COLUMN temp_status TEXT;ALTER TABLE telemetry ADD COLUMN gas_status TEXT;ALTER TABLE telemetry ADD COLUMN flame_status TEXT\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0010",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0011"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Alter or skip telemetry",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n0011",
+    "type": "function",
+    "wires": [
+      [
+        "n0012"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Migrate lighting schema",
+    "func": "msg.topic=\"SELECT COUNT(*) as cnt FROM pragma_table_info('telemetry') WHERE name='rele'\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0012",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0013"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Check if lighting cols exist",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n0013",
+    "type": "function",
+    "wires": [
+      [
+        "n0014"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Add lighting cols if missing",
+    "func": "var exists=(msg.payload||[])[0];if(exists&&exists.cnt>0)msg.topic=\"SELECT 1\";else msg.topic=\"ALTER TABLE telemetry ADD COLUMN luz_ventana REAL;ALTER TABLE telemetry ADD COLUMN luz_aula REAL;ALTER TABLE telemetry ADD COLUMN temp_c REAL;ALTER TABLE telemetry ADD COLUMN humedad REAL;ALTER TABLE telemetry ADD COLUMN rele INTEGER\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0014",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0015"
+      ]
+    ],
+    "z": "z_init",
+    "name": "Alter or skip lighting",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n0015",
+    "type": "debug",
+    "wires": [
+      []
+    ],
+    "z": "z_init",
+    "name": "DB init result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto"
+  },
+  {
+    "id": "n0016",
+    "type": "tab",
+    "wires": [],
+    "label": "Telemetry",
+    "z": "z_tele"
+  },
+  {
+    "id": "n0017",
+    "type": "mqtt in",
+    "wires": [
+      [
+        "n0018"
+      ]
+    ],
+    "z": "z_tele",
+    "name": "Telemetry MQTT",
+    "topic": "nodealert/+/telemetry",
+    "qos": "1",
+    "datatype": "json",
+    "broker": "br_main"
+  },
+  {
+    "id": "n0018",
+    "type": "function",
+    "wires": [
+      [
+        "n0019"
+      ]
+    ],
+    "z": "z_tele",
+    "name": "Process telemetry",
+    "func": "\nvar p = msg.payload, nid = msg.topic.split('/')[1], now = new Date().toISOString().replace('T',' ').split('.')[0];\n// Validacion: se descarta lo que no tenga el formato del contrato (evita inyeccion SQL)\nif (typeof p !== 'object' || p === null || !/^[A-Za-z0-9_-]{1,64}$/.test(nid)) { node.warn('telemetria descartada: formato invalido en ' + msg.topic); return null; }\nvar nm = (typeof p.device_id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(p.device_id)) ? p.device_id : nid;\nvar ts=String(p.temp_status||''),gs=String(p.gas_status||''),fs=String(p.flame_status||'');\nfunction V(x){return (typeof x === 'number' && isFinite(x)) ? x : 'NULL';}\nvar temp=V(p.temperature),gas=V(p.gas_ppm),flame=V(p.flame);\nvar pres=V(p.presencia),lv=V(p.luz_ventana_lx),la=V(p.luz_aula_lx),tc=V(p.temp_c),hu=V(p.humedad_pct),rl=V(p.rele_canal1);\nmsg.topic=\"INSERT INTO nodes(node_id,name,is_online,last_seen)SELECT'\"+nid+\"','\"+nm+\"',1,'\"+now+\"'WHERE NOT EXISTS(SELECT 1 FROM nodes WHERE node_id='\"+nid+\"');UPDATE nodes SET is_online=1,last_seen='\"+now+\"',name=COALESCE(NULLIF(name,''),'\"+nm+\"')WHERE node_id='\"+nid+\"'AND hidden=0;INSERT INTO telemetry(node_id,temperature,gas,flame,temp_status,gas_status,flame_status,presencia,luz_ventana,luz_aula,temp_c,humedad,rele,timestamp)SELECT'\"+nid+\"',\"+temp+\",\"+gas+\",\"+flame+\",'\"+ts.replace(/'/g,\"''\")+\"','\"+gs.replace(/'/g,\"''\")+\"','\"+fs.replace(/'/g,\"''\")+\"',\"+pres+\",\"+lv+\",\"+la+\",\"+tc+\",\"+hu+\",\"+rl+\",'\"+now+\"'WHERE(SELECT hidden FROM nodes WHERE node_id='\"+nid+\"')=0;\";\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0019",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n001a"
+      ]
+    ],
+    "z": "z_tele",
+    "name": "Insert telemetry",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n001a",
+    "type": "debug",
+    "wires": [
+      []
+    ],
+    "z": "z_tele",
+    "name": "Telemetry ingested",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto"
+  },
+  {
+    "id": "n001b",
+    "type": "tab",
+    "wires": [],
+    "label": "Offline Detector",
+    "z": "z_off"
+  },
+  {
+    "id": "n001c",
+    "type": "inject",
+    "wires": [
+      [
+        "n001d"
+      ]
+    ],
+    "z": "z_off",
+    "name": "Check offline every 30s",
+    "props": [],
+    "repeat": "30",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date"
+  },
+  {
+    "id": "n001d",
+    "type": "function",
+    "wires": [
+      [
+        "n001e"
+      ]
+    ],
+    "z": "z_off",
+    "name": "Find offline",
+    "func": "msg.topic=\"SELECT node_id FROM nodes WHERE is_online=1 AND hidden=0 AND last_seen<datetime('now','-60 seconds')\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n001e",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n001f"
+      ]
+    ],
+    "z": "z_off",
+    "name": "Select offline nodes",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n001f",
+    "type": "function",
+    "wires": [
+      [
+        "n0020"
+      ]
+    ],
+    "z": "z_off",
+    "name": "Split & mark offline",
+    "func": "\nvar rows=msg.payload||[],now=new Date().toISOString().replace('T',' ').split('.')[0];\nreturn rows.map(function(r){return{topic:\"UPDATE nodes SET is_online=0 WHERE node_id='\"+r.node_id+\"'\"};});",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0020",
+    "type": "sqlite",
+    "wires": [
+      []
+    ],
+    "z": "z_off",
+    "name": "Update & log offline",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n0021",
+    "type": "tab",
+    "wires": [],
+    "label": "Cleanup",
+    "z": "z_cln"
+  },
+  {
+    "id": "n0022",
+    "type": "inject",
+    "wires": [
+      [
+        "n0023"
+      ]
+    ],
+    "z": "z_cln",
+    "name": "Daily cleanup",
+    "props": [],
+    "repeat": "86400",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date"
+  },
+  {
+    "id": "n0023",
+    "type": "function",
+    "wires": [
+      [
+        "n0024"
+      ]
+    ],
+    "z": "z_cln",
+    "name": "Cleanup SQL",
+    "func": "msg.topic=\"DELETE FROM telemetry WHERE timestamp<datetime('now','-30 days')\";return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0024",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0025"
+      ]
+    ],
+    "z": "z_cln",
+    "name": "Delete old data",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n0025",
+    "type": "debug",
+    "wires": [
+      []
+    ],
+    "z": "z_cln",
+    "name": "Cleanup result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto"
+  },
+  {
+    "id": "n0026",
+    "type": "tab",
+    "wires": [],
+    "label": "API",
+    "z": "z_api"
+  },
+  {
+    "id": "n0027",
+    "type": "http in",
+    "wires": [
+      [
+        "n0028"
+      ]
+    ],
+    "z": "z_api",
+    "name": "GET /api/health",
+    "url": "/api/health",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n0028",
+    "type": "function",
+    "wires": [
+      [
+        "n0029"
+      ],
+      [
+        "n0029"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_health",
+    "func": "\nfunction bad(e){msg.statusCode=400;msg.payload={error:e};return [null,msg];}\nvar ID_OK=/^[A-Za-z0-9_-]{1,64}$/;\nif(msg.req.params&&msg.req.params.node_id!==undefined&&!ID_OK.test(msg.req.params.node_id))return bad(\"node_id invalido\");\nmsg.payload={status:\"ok\",timestamp:new Date().toISOString()};msg.statusCode=200;return [msg,null];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0029",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n002a",
+    "type": "http in",
+    "wires": [
+      [
+        "n002b"
+      ]
+    ],
+    "z": "z_api",
+    "name": "GET /api/nodes",
+    "url": "/api/nodes",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n002b",
+    "type": "function",
+    "wires": [
+      [
+        "n002d"
+      ],
+      [
+        "n002c"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes",
+    "func": "\nfunction bad(e){msg.statusCode=400;msg.payload={error:e};return [null,msg];}\nvar ID_OK=/^[A-Za-z0-9_-]{1,64}$/;\nif(msg.req.params&&msg.req.params.node_id!==undefined&&!ID_OK.test(msg.req.params.node_id))return bad(\"node_id invalido\");\nmsg.topic=\"SELECT * FROM nodes WHERE hidden=0 ORDER BY last_seen DESC\";return [msg,null];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n002d",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n002c"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n002c",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n002e",
+    "type": "http in",
+    "wires": [
+      [
+        "n002f"
+      ]
+    ],
+    "z": "z_api",
+    "name": "GET /api/nodes/:node_id",
+    "url": "/api/nodes/:node_id",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n002f",
+    "type": "function",
+    "wires": [
+      [
+        "n0031"
+      ],
+      [
+        "n0030"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes__node_id",
+    "func": "\nfunction bad(e){msg.statusCode=400;msg.payload={error:e};return [null,msg];}\nvar ID_OK=/^[A-Za-z0-9_-]{1,64}$/;\nif(msg.req.params&&msg.req.params.node_id!==undefined&&!ID_OK.test(msg.req.params.node_id))return bad(\"node_id invalido\");\nvar id=msg.req.params.node_id;msg.topic=\"SELECT n.*,t.temperature,t.gas,t.flame,t.temp_status,t.gas_status,t.flame_status,t.presencia,t.luz_ventana,t.luz_aula,t.temp_c,t.humedad,t.rele,t.timestamp as last_telemetry_ts FROM nodes n LEFT JOIN telemetry t ON t.id=(SELECT id FROM telemetry WHERE node_id='\"+id+\"'ORDER BY timestamp DESC LIMIT 1)WHERE n.node_id='\"+id+\"'AND n.hidden=0\";return [msg,null];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0031",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0030"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes__node_id",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n0030",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n0032",
+    "type": "http in",
+    "wires": [
+      [
+        "n0033"
+      ]
+    ],
+    "z": "z_api",
+    "name": "POST /api/nodes",
+    "url": "/api/nodes",
+    "method": "post",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n0033",
+    "type": "function",
+    "wires": [
+      [
+        "n0035"
+      ],
+      [
+        "n0034"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes",
+    "func": "\nfunction bad(e){msg.statusCode=400;msg.payload={error:e};return [null,msg];}\nvar ID_OK=/^[A-Za-z0-9_-]{1,64}$/;\nif(msg.req.params&&msg.req.params.node_id!==undefined&&!ID_OK.test(msg.req.params.node_id))return bad(\"node_id invalido\");\nvar b=msg.req.body||{},nid=b.node_id;if(typeof nid!==\"string\"||!ID_OK.test(nid))return bad(\"node_id requerido: letras, numeros, - o _ (max 64)\");var nm=String(b.name||nid).slice(0,64).replace(/'/g,\"''\");msg.topic=\"INSERT OR REPLACE INTO nodes(node_id,name,is_online,last_seen,hidden)VALUES('\"+nid+\"','\"+nm+\"',0,datetime('now'),0);INSERT OR IGNORE INTO node_config(node_id)VALUES('\"+nid+\"')\";return [msg,null];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0035",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0034"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n0034",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n0036",
+    "type": "http in",
+    "wires": [
+      [
+        "n0037"
+      ]
+    ],
+    "z": "z_api",
+    "name": "DELETE /api/nodes/:node_id",
+    "url": "/api/nodes/:node_id",
+    "method": "delete",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n0037",
+    "type": "function",
+    "wires": [
+      [
+        "n0039"
+      ],
+      [
+        "n0038"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes__node_id",
+    "func": "\nfunction bad(e){msg.statusCode=400;msg.payload={error:e};return [null,msg];}\nvar ID_OK=/^[A-Za-z0-9_-]{1,64}$/;\nif(msg.req.params&&msg.req.params.node_id!==undefined&&!ID_OK.test(msg.req.params.node_id))return bad(\"node_id invalido\");\nvar id=msg.req.params.node_id;msg.topic=\"UPDATE nodes SET hidden=1 WHERE node_id='\"+id+\"'\";return [msg,null];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0039",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0038"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes__node_id",
+    "mydb": "db_main",
+    "sqlquery": "batch",
+    "sql": ""
+  },
+  {
+    "id": "n0038",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n003a",
+    "type": "http in",
+    "wires": [
+      [
+        "n003b"
+      ]
+    ],
+    "z": "z_api",
+    "name": "GET /api/telemetry/latest",
+    "url": "/api/telemetry/latest",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n003b",
+    "type": "function",
+    "wires": [
+      [
+        "n003d"
+      ],
+      [
+        "n003c"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_telemetry_latest",
+    "func": "\nfunction bad(e){msg.statusCode=400;msg.payload={error:e};return [null,msg];}\nvar ID_OK=/^[A-Za-z0-9_-]{1,64}$/;\nif(msg.req.params&&msg.req.params.node_id!==undefined&&!ID_OK.test(msg.req.params.node_id))return bad(\"node_id invalido\");\nmsg.topic=\"SELECT t.*,n.name FROM telemetry t INNER JOIN(SELECT node_id,MAX(timestamp)as max_ts FROM telemetry GROUP BY node_id)latest ON t.node_id=latest.node_id AND t.timestamp=latest.max_ts LEFT JOIN nodes n ON n.node_id=t.node_id ORDER BY t.timestamp DESC\";return [msg,null];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n003d",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n003c"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_telemetry_latest",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n003c",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n003e",
+    "type": "http in",
+    "wires": [
+      [
+        "n003f"
+      ]
+    ],
+    "z": "z_api",
+    "name": "GET /api/telemetry/:node_id",
+    "url": "/api/telemetry/:node_id",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n003f",
+    "type": "function",
+    "wires": [
+      [
+        "n0041"
+      ],
+      [
+        "n0040"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_telemetry__node_id",
+    "func": "\nfunction bad(e){msg.statusCode=400;msg.payload={error:e};return [null,msg];}\nvar ID_OK=/^[A-Za-z0-9_-]{1,64}$/;\nif(msg.req.params&&msg.req.params.node_id!==undefined&&!ID_OK.test(msg.req.params.node_id))return bad(\"node_id invalido\");\nvar id=msg.req.params.node_id,lim=msg.req.query.limit===undefined?50:Number(msg.req.query.limit);if(!Number.isInteger(lim)||lim<1||lim>1000)return bad(\"limit tiene que ser un entero entre 1 y 1000\");msg.topic=\"SELECT * FROM telemetry WHERE node_id='\"+id+\"'ORDER BY timestamp DESC LIMIT \"+lim;return [msg,null];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0041",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0040"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_telemetry__node_id",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n0040",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n0042",
+    "type": "http in",
+    "wires": [
+      [
+        "n0043"
+      ]
+    ],
+    "z": "z_api",
+    "name": "GET /api/telemetry/averages",
+    "url": "/api/telemetry/averages",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n0043",
+    "type": "function",
+    "wires": [
+      [
+        "n0045"
+      ],
+      [
+        "n0044"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_telemetry_averages",
+    "func": "\nfunction bad(e){msg.statusCode=400;msg.payload={error:e};return [null,msg];}\nvar ID_OK=/^[A-Za-z0-9_-]{1,64}$/;\nif(msg.req.params&&msg.req.params.node_id!==undefined&&!ID_OK.test(msg.req.params.node_id))return bad(\"node_id invalido\");\nmsg.topic=\"SELECT node_id,ROUND(AVG(temperature),1)as avg_temperature,ROUND(AVG(gas),0)as avg_gas,COUNT(*)as samples FROM telemetry WHERE timestamp>datetime('now','-1 hour')GROUP BY node_id\";return [msg,null];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0045",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0044"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_telemetry_averages",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n0044",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n0046",
+    "type": "http in",
+    "wires": [
+      [
+        "n0047"
+      ]
+    ],
+    "z": "z_api",
+    "name": "GET /api/nodes/:node_id/config",
+    "url": "/api/nodes/:node_id/config",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n0047",
+    "type": "function",
+    "wires": [
+      [
+        "n0049"
+      ],
+      [
+        "n0048"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes__node_id_config",
+    "func": "\nfunction bad(e){msg.statusCode=400;msg.payload={error:e};return [null,msg];}\nvar ID_OK=/^[A-Za-z0-9_-]{1,64}$/;\nif(msg.req.params&&msg.req.params.node_id!==undefined&&!ID_OK.test(msg.req.params.node_id))return bad(\"node_id invalido\");\nvar id=msg.req.params.node_id;msg.topic=\"SELECT * FROM node_config WHERE node_id='\"+id+\"'\";return [msg,null];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n0049",
+    "type": "sqlite",
+    "wires": [
+      [
+        "n0048"
+      ]
+    ],
+    "z": "z_api",
+    "name": "_api_nodes__node_id_config",
+    "mydb": "db_main",
+    "sqlquery": "msg.topic",
+    "sql": ""
+  },
+  {
+    "id": "n0048",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n004a",
+    "type": "http in",
+    "wires": [
+      [
+        "n004b"
+      ]
+    ],
+    "z": "z_api",
+    "name": "POST /api/nodes/:node_id/config",
+    "url": "/api/nodes/:node_id/config",
+    "method": "post",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n004b",
+    "type": "function",
+    "wires": [
+      [
+        "n004c"
+      ]
+    ],
+    "z": "z_api",
+    "name": "config_save",
+    "func": "\nmsg.statusCode=405;msg.payload={error:\"Los umbrales son fijos en el firmware. Use GET para visualizarlos.\"};return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n004c",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  },
+  {
+    "id": "n004d",
+    "type": "http in",
+    "wires": [
+      [
+        "n004e"
+      ]
+    ],
+    "z": "z_api",
+    "name": "POST /api/nodes/:node_id/command",
+    "url": "/api/nodes/:node_id/command",
+    "method": "post",
+    "upload": false,
+    "swaggerDoc": ""
+  },
+  {
+    "id": "n004e",
+    "type": "function",
+    "wires": [
+      [
+        "n004f"
+      ],
+      [
+        "n0050"
+      ]
+    ],
+    "z": "z_api",
+    "name": "command_publish",
+    "func": "\nvar COMANDOS=[\"RELE_ON\",\"RELE_OFF\",\"AUTO\",\"REBOOT\",\"LED_ON\",\"LED_OFF\",\"BUZZER_ON\",\"BUZZER_OFF\"];\nvar nid=msg.req.params.node_id,cmd=(msg.req.body||{}).command;\nif(!/^[A-Za-z0-9_-]{1,64}$/.test(nid)){msg.statusCode=400;msg.payload={error:\"node_id invalido\"};return [null,msg];}\nif(typeof cmd!==\"string\"||COMANDOS.indexOf(cmd)<0){msg.statusCode=400;msg.payload={error:\"comando invalido\",validos:COMANDOS};return [null,msg];}\nvar out={topic:\"nodealert/\"+nid+\"/commands\",payload:cmd,qos:1,retain:false};\nmsg.statusCode=202;msg.payload={enviado:cmd,topico:out.topic};\nreturn [out,msg];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "n004f",
+    "type": "mqtt out",
+    "z": "z_api",
+    "name": "Send command",
+    "topic": "",
+    "qos": "1",
+    "retain": "false",
+    "broker": "br_main"
+  },
+  {
+    "id": "n0050",
+    "type": "http response",
+    "wires": [
+      []
+    ],
+    "z": "z_api",
+    "name": "",
+    "statusCode": "",
+    "headers": {}
+  }
+]
+‎raspberry/nodered/data/package.json‎
++6
+Lines changed: 6 additions & 0 deletions
+
+
+Original file line number	Diff line number	Diff line change
+{
+    "name": "node-red-project",
+    "description": "A Node-RED Project",
+    "version": "0.0.1",
+    "private": true
+}
+‎raspberry/nodered/data/settings.js‎
++650
+Lines changed: 650 additions & 0 deletions
+Large diffs are not rendered by default.
+‎raspberry/nodered/Dockerfile‎
++7
+Lines changed: 7 additions & 0 deletions
+‎raspberry/nodered/start.sh‎
++15
+Lines changed: 15 additions & 0 deletions
+‎raspberry/.env.example‎
++8
+Lines changed: 8 additions & 0 deletions
+Original file line number	Diff line number	Diff line change
+# Copiar como raspberry/.env y cambiar las claves. raspberry/.env NO se sube al repo.
+# Clave del usuario "nodealert" del broker (la usa Node-RED)
+MQTT_NODERED_PASS=cambiar-esta-clave
+# Clave del usuario "nodealert_esp32" del broker (la usa el firmware:
+# tiene que ser igual a MQTT_PASS en firmware/control-luz/main/config_local.h)
+MQTT_ESP32_PASS=cambiar-esta-otra-clave
+‎raspberry/docker-compose.yml‎
++54
+Lines changed: 54 additions & 0 deletions
+Original file line number	Diff line number	Diff line change
+services:
+  mosquitto:
+    build: ./mqtt
+    container_name: nodealert-mqtt
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mqtt/data:/mosquitto/data
+    environment:
+      - MQTT_NODERED_PASS=${MQTT_NODERED_PASS:?Falta MQTT_NODERED_PASS en raspberry/.env (copiar .env.example)}
+      - MQTT_ESP32_PASS=${MQTT_ESP32_PASS:?Falta MQTT_ESP32_PASS en raspberry/.env (copiar .env.example)}
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 1883"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nodealert-net
+    restart: unless-stopped
+  nodered:
+    build: ./nodered
+    container_name: nodealert-nodered
+    ports:
+      - "1880:1880"
+    volumes:
+      - ./nodered/data:/data
+    environment:
+      - TZ=America/Argentina/Buenos_Aires
+      - MQTT_NODERED_PASS=${MQTT_NODERED_PASS:?Falta MQTT_NODERED_PASS en raspberry/.env (copiar .env.example)}
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    networks:
+      - nodealert-net
+    restart: unless-stopped
+  frontend:
+    build: ./frontend
+    container_name: nodealert-frontend
+    ports:
+      - "3001:80"
+    volumes:
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      nodered:
+        condition: service_started
+    networks:
+      - nodealert-net
+    restart: unless-stopped
+networks:
+  nodealert-net:
+    driver: bridge
+‎raspberry/generate-flows.js‎
++201
+Lines changed: 201 additions & 0 deletions
+Original file line number	Diff line number	Diff line change
+const fs = require("fs");
+let seq = 0;
+const id = () => "n" + (++seq).toString(16).padStart(4, "0");
+const DB = "db_main";
+const BR = "br_main";
+function node(type, opts) {
+  return { id: id(), type, wires: [], ...opts };
+}
+function tab(label, name) {
+  return node("tab", { label, z: name });
+}
+function inject(name, z, opts) {
+  return node("inject", { z, name, props: [], repeat: "", crontab: "", once: false, onceDelay: 0.1, topic: "", payload: "", payloadType: "date", wires: [[]], ...opts });
+}
+const fnode = (name, code, z) =>
+  node("function", { z, name, func: code, outputs: 1, noerr: 0, initialize: "", finalize: "", libs: [], wires: [[]] });
+const sqln = (name, z) =>
+  node("sqlite", { z, name, mydb: DB, sqlquery: "msg.topic", sql: "", wires: [[]] });
+const sqlnBatch = (name, z) =>
+  node("sqlite", { z, name, mydb: DB, sqlquery: "batch", sql: "", wires: [[]] });
+const debugN = (name, z) =>
+  node("debug", { z, name, active: true, tosidebar: true, console: false, tostatus: false, complete: "payload", targetType: "msg", statusVal: "", statusType: "auto", wires: [[]] });
+function chain(list) {
+  for (let i = 0; i < list.length - 1; i++) {
+    list[i].wires = [[list[i + 1].id]];
+  }
+  return list;
+}
+const F = [];
+const Z = {};
+// ========== CONFIG NODES ==========
+F.push(node("sqlitedb", { id: DB, name: "nodered.db", db: "/data/nodered.db", mode: "READ_WRITE_CREATE" }));
+F.push(node("mqtt-broker", {
+  id: BR, name: "Mosquitto local",
+  broker: "mosquitto", port: "1883", clientid: "", usetls: false,
+  compatmode: true, keepalive: "60", cleansession: true,
+  birthTopic: "", birthQos: "0", birthPayload: "",
+  closeTopic: "", closeQos: "0", closePayload: "",
+  willTopic: "", willQos: "0", willPayload: ""
+  // Usuario y clave: NO van aca. nodered/start.sh los escribe en
+  // /data/flows_cred.json al arrancar, desde las variables de raspberry/.env.
+}));
+// ========== TAB 0: Init DB ==========
+Z.init = "z_init";
+F.push(tab("Init DB", Z.init));
+chain([
+  inject("Init DB", Z.init, { once: true }),
+  fnode("Create tables", `msg.topic = \`
+CREATE TABLE IF NOT EXISTS nodes (node_id TEXT PRIMARY KEY,name TEXT,is_online INTEGER DEFAULT 0,last_seen DATETIME,hidden INTEGER DEFAULT 0);
+CREATE TABLE IF NOT EXISTS telemetry (id INTEGER PRIMARY KEY AUTOINCREMENT,node_id TEXT,temperature REAL,gas INTEGER,flame INTEGER,temp_status TEXT,gas_status TEXT,flame_status TEXT,presencia INTEGER,luz_ventana REAL,luz_aula REAL,temp_c REAL,humedad REAL,rele INTEGER,timestamp DATETIME);
+CREATE INDEX IF NOT EXISTS idx_telemetry_node_ts ON telemetry(node_id, timestamp);
+CREATE TABLE IF NOT EXISTS node_config (node_id TEXT PRIMARY KEY,temperature_critical REAL DEFAULT 50,gas_warning INTEGER DEFAULT 3000,gas_critical INTEGER DEFAULT 4000,buzzer_enabled INTEGER DEFAULT 1,flame_critical_value REAL DEFAULT 500,flame_critical_severity TEXT DEFAULT 'critical',flame_critical_message TEXT DEFAULT 'Llama detectada',gas_critical_value REAL DEFAULT 2000,gas_critical_severity TEXT DEFAULT 'high',gas_critical_message TEXT DEFAULT 'Nivel de gas peligroso',temp_critical_value REAL DEFAULT 50,temp_critical_severity TEXT DEFAULT 'high',temp_critical_message TEXT DEFAULT 'Temperatura peligrosa',updated_at DATETIME);
+\`;return msg;`, Z.init),
+  sqlnBatch("Execute init", Z.init),
+  fnode("Migrate schema", `msg.topic="SELECT COUNT(*) as cnt FROM pragma_table_info('nodes') WHERE name='hidden'";return msg;`, Z.init),
+  sqln("Check if hidden col exists", Z.init),
+  fnode("Add hidden if missing", `var exists=(msg.payload||[])[0];msg.topic=exists&&exists.cnt>0?"SELECT 1":"ALTER TABLE nodes ADD COLUMN hidden INTEGER DEFAULT 0";return msg;`, Z.init),
+  sqlnBatch("Alter or skip", Z.init),
+  fnode("Set hidden default", `msg.topic="UPDATE nodes SET hidden=0 WHERE hidden IS NULL";return msg;`, Z.init),
+  sqlnBatch("Update hidden", Z.init),
+  fnode("Migrate telemetry schema", `msg.topic="SELECT COUNT(*) as cnt FROM pragma_table_info('telemetry') WHERE name='temp_status'";return msg;`, Z.init),
+  sqln("Check if status cols exist", Z.init),
+  fnode("Add status cols if missing", `var exists=(msg.payload||[])[0];if(exists&&exists.cnt>0)msg.topic="SELECT 1";else msg.topic="ALTER TABLE telemetry ADD COLUMN temp_status TEXT;ALTER TABLE telemetry ADD COLUMN gas_status TEXT;ALTER TABLE telemetry ADD COLUMN flame_status TEXT";return msg;`, Z.init),
+  sqlnBatch("Alter or skip telemetry", Z.init),
+  fnode("Migrate lighting schema", `msg.topic="SELECT COUNT(*) as cnt FROM pragma_table_info('telemetry') WHERE name='rele'";return msg;`, Z.init),
+  sqln("Check if lighting cols exist", Z.init),
+  fnode("Add lighting cols if missing", `var exists=(msg.payload||[])[0];if(exists&&exists.cnt>0)msg.topic="SELECT 1";else msg.topic="ALTER TABLE telemetry ADD COLUMN luz_ventana REAL;ALTER TABLE telemetry ADD COLUMN luz_aula REAL;ALTER TABLE telemetry ADD COLUMN temp_c REAL;ALTER TABLE telemetry ADD COLUMN humedad REAL;ALTER TABLE telemetry ADD COLUMN rele INTEGER";return msg;`, Z.init),
+  sqlnBatch("Alter or skip lighting", Z.init),
+  debugN("DB init result", Z.init)
+].map(n => { F.push(n); return n; }));
+// ========== TAB 1: Telemetry ==========
+Z.tele = "z_tele";
+F.push(tab("Telemetry", Z.tele));
+const t1 = node("mqtt in", { z: Z.tele, name: "Telemetry MQTT", topic: "nodealert/+/telemetry", qos: "1", datatype: "json", broker: BR, wires: [[]] });
+const t2 = fnode("Process telemetry", `
+var p = msg.payload, nid = msg.topic.split('/')[1], now = new Date().toISOString().replace('T',' ').split('.')[0];
+// Validacion: se descarta lo que no tenga el formato del contrato (evita inyeccion SQL)
+if (typeof p !== 'object' || p === null || !/^[A-Za-z0-9_-]{1,64}$/.test(nid)) { node.warn('telemetria descartada: formato invalido en ' + msg.topic); return null; }
+var nm = (typeof p.device_id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(p.device_id)) ? p.device_id : nid;
+var ts=String(p.temp_status||''),gs=String(p.gas_status||''),fs=String(p.flame_status||'');
+function V(x){return (typeof x === 'number' && isFinite(x)) ? x : 'NULL';}
+var temp=V(p.temperature),gas=V(p.gas_ppm),flame=V(p.flame);
+var pres=V(p.presencia),lv=V(p.luz_ventana_lx),la=V(p.luz_aula_lx),tc=V(p.temp_c),hu=V(p.humedad_pct),rl=V(p.rele_canal1);
+msg.topic="INSERT INTO nodes(node_id,name,is_online,last_seen)SELECT'"+nid+"','"+nm+"',1,'"+now+"'WHERE NOT EXISTS(SELECT 1 FROM nodes WHERE node_id='"+nid+"');UPDATE nodes SET is_online=1,last_seen='"+now+"',name=COALESCE(NULLIF(name,''),'"+nm+"')WHERE node_id='"+nid+"'AND hidden=0;INSERT INTO telemetry(node_id,temperature,gas,flame,temp_status,gas_status,flame_status,presencia,luz_ventana,luz_aula,temp_c,humedad,rele,timestamp)SELECT'"+nid+"',"+temp+","+gas+","+flame+",'"+ts.replace(/'/g,"''")+"','"+gs.replace(/'/g,"''")+"','"+fs.replace(/'/g,"''")+"',"+pres+","+lv+","+la+","+tc+","+hu+","+rl+",'"+now+"'WHERE(SELECT hidden FROM nodes WHERE node_id='"+nid+"')=0;";
+return msg;`, Z.tele);
+const t3 = sqlnBatch("Insert telemetry", Z.tele);
+const t4 = debugN("Telemetry ingested", Z.tele);
+[t1, t2, t3, t4].forEach(n => F.push(n));
+t1.wires = [[t2.id]]; t2.wires = [[t3.id]]; t3.wires = [[t4.id]];
+// ========== TAB 2: Offline Detector ==========
+Z.off = "z_off";
+F.push(tab("Offline Detector", Z.off));
+const o1 = inject("Check offline every 30s", Z.off, { repeat: "30" });
+const o2 = fnode("Find offline", `msg.topic="SELECT node_id FROM nodes WHERE is_online=1 AND hidden=0 AND last_seen<datetime('now','-60 seconds')";return msg;`, Z.off);
+const o3 = sqln("Select offline nodes", Z.off);
+const o4 = fnode("Split & mark offline", `
+var rows=msg.payload||[],now=new Date().toISOString().replace('T',' ').split('.')[0];
+return rows.map(function(r){return{topic:"UPDATE nodes SET is_online=0 WHERE node_id='"+r.node_id+"'"};});`, Z.off);
+const o5 = sqlnBatch("Update & log offline", Z.off);
+[o1, o2, o3, o4, o5].forEach(n => F.push(n));
+o1.wires = [[o2.id]]; o2.wires = [[o3.id]]; o3.wires = [[o4.id]]; o4.wires = [[o5.id]];
+// ========== TAB 4: Cleanup ==========
+Z.cln = "z_cln";
+F.push(tab("Cleanup", Z.cln));
+chain([
+  inject("Daily cleanup", Z.cln, { repeat: "86400" }),
+  fnode("Cleanup SQL", `msg.topic="DELETE FROM telemetry WHERE timestamp<datetime('now','-30 days')";return msg;`, Z.cln),
+  sqlnBatch("Delete old data", Z.cln),
+  debugN("Cleanup result", Z.cln)
+].map(n => { F.push(n); return n; }));
+// ========== TAB 5: API ==========
+Z.api = "z_api";
+F.push(tab("API", Z.api));
+// Validacion comun de la API: node_id solo letras, numeros, guion y guion bajo.
+const VALIDAR = `
+function bad(e){msg.statusCode=400;msg.payload={error:e};return [null,msg];}
+var ID_OK=/^[A-Za-z0-9_-]{1,64}$/;
+if(msg.req.params&&msg.req.params.node_id!==undefined&&!ID_OK.test(msg.req.params.node_id))return bad("node_id invalido");
+`;
+function addApi(method, url, fnCode, db) {
+  const hin = node("http in", { z: Z.api, name: `${method} ${url}`, url, method: method.toLowerCase(), upload: false, swaggerDoc: "", wires: [[]] });
+  // Salida 1: consulta valida -> SQL. Salida 2: error de validacion -> respuesta HTTP directa.
+  const fn = fnode(url.replace(/[\/:]/g, "_"), VALIDAR + fnCode.replace(/return msg;/g, "return [msg,null];"), Z.api);
+  fn.outputs = 2;
+  F.push(hin, fn);
+  const hres = node("http response", { z: Z.api, name: "", statusCode: "", headers: {}, wires: [[]] });
+  if (db) {
+    const sql = (method.toUpperCase()==="GET") ? sqln(url.replace(/[\/:]/g, "_"), Z.api) : sqlnBatch(url.replace(/[\/:]/g, "_"), Z.api);
+    F.push(sql);
+    fn.wires = [[sql.id], [hres.id]];
+    sql.wires = [[hres.id]];
+  } else {
+    fn.wires = [[hres.id], [hres.id]];
+  }
+  F.push(hres);
+  hin.wires = [[fn.id]];
+}
+addApi("GET", "/api/health", `msg.payload={status:"ok",timestamp:new Date().toISOString()};msg.statusCode=200;return msg;`);
+addApi("GET", "/api/nodes", `msg.topic="SELECT * FROM nodes WHERE hidden=0 ORDER BY last_seen DESC";return msg;`, true);
+addApi("GET", "/api/nodes/:node_id", `var id=msg.req.params.node_id;msg.topic="SELECT n.*,t.temperature,t.gas,t.flame,t.temp_status,t.gas_status,t.flame_status,t.presencia,t.luz_ventana,t.luz_aula,t.temp_c,t.humedad,t.rele,t.timestamp as last_telemetry_ts FROM nodes n LEFT JOIN telemetry t ON t.id=(SELECT id FROM telemetry WHERE node_id='"+id+"'ORDER BY timestamp DESC LIMIT 1)WHERE n.node_id='"+id+"'AND n.hidden=0";return msg;`, true);
+addApi("POST", "/api/nodes", `var b=msg.req.body||{},nid=b.node_id;if(typeof nid!=="string"||!ID_OK.test(nid))return bad("node_id requerido: letras, numeros, - o _ (max 64)");var nm=String(b.name||nid).slice(0,64).replace(/'/g,"''");msg.topic="INSERT OR REPLACE INTO nodes(node_id,name,is_online,last_seen,hidden)VALUES('"+nid+"','"+nm+"',0,datetime('now'),0);INSERT OR IGNORE INTO node_config(node_id)VALUES('"+nid+"')";return msg;`, true);
+addApi("DELETE", "/api/nodes/:node_id", `var id=msg.req.params.node_id;msg.topic="UPDATE nodes SET hidden=1 WHERE node_id='"+id+"'";return msg;`, true);
+addApi("GET", "/api/telemetry/latest", `msg.topic="SELECT t.*,n.name FROM telemetry t INNER JOIN(SELECT node_id,MAX(timestamp)as max_ts FROM telemetry GROUP BY node_id)latest ON t.node_id=latest.node_id AND t.timestamp=latest.max_ts LEFT JOIN nodes n ON n.node_id=t.node_id ORDER BY t.timestamp DESC";return msg;`, true);
+addApi("GET", "/api/telemetry/:node_id", `var id=msg.req.params.node_id,lim=msg.req.query.limit===undefined?50:Number(msg.req.query.limit);if(!Number.isInteger(lim)||lim<1||lim>1000)return bad("limit tiene que ser un entero entre 1 y 1000");msg.topic="SELECT * FROM telemetry WHERE node_id='"+id+"'ORDER BY timestamp DESC LIMIT "+lim;return msg;`, true);
+addApi("GET", "/api/telemetry/averages", `msg.topic="SELECT node_id,ROUND(AVG(temperature),1)as avg_temperature,ROUND(AVG(gas),0)as avg_gas,COUNT(*)as samples FROM telemetry WHERE timestamp>datetime('now','-1 hour')GROUP BY node_id";return msg;`, true);
+addApi("GET", "/api/nodes/:node_id/config", `var id=msg.req.params.node_id;msg.topic="SELECT * FROM node_config WHERE node_id='"+id+"'";return msg;`, true);
+// POST /api/nodes/:node_id/config — saves to DB only (read thresholds from firmware)
+{
+  const hin = node("http in", { z: Z.api, name: "POST /api/nodes/:node_id/config", url: "/api/nodes/:node_id/config", method: "post", upload: false, swaggerDoc: "", wires: [[]] });
+  const fn = fnode("config_save", `
+msg.statusCode=405;msg.payload={error:"Los umbrales son fijos en el firmware. Use GET para visualizarlos."};return msg;`, Z.api);
+  const hres = node("http response", { z: Z.api, name: "", statusCode: "", headers: {}, wires: [[]] });
+  [hin, fn, hres].forEach(n => F.push(n));
+  hin.wires = [[fn.id]];
+  fn.wires = [[hres.id]];
+}
+// POST /api/nodes/:node_id/command — publishes raw command to MQTT
+{
+  const hin = node("http in", { z: Z.api, name: "POST /api/nodes/:node_id/command", url: "/api/nodes/:node_id/command", method: "post", upload: false, swaggerDoc: "", wires: [[]] });
+  // Salida 1: mensaje MQTT al nodo. Salida 2: respuesta HTTP (siempre).
+  const fn = fnode("command_publish", `
+var COMANDOS=["RELE_ON","RELE_OFF","AUTO","REBOOT","LED_ON","LED_OFF","BUZZER_ON","BUZZER_OFF"];
+var nid=msg.req.params.node_id,cmd=(msg.req.body||{}).command;
+if(!/^[A-Za-z0-9_-]{1,64}$/.test(nid)){msg.statusCode=400;msg.payload={error:"node_id invalido"};return [null,msg];}
+if(typeof cmd!=="string"||COMANDOS.indexOf(cmd)<0){msg.statusCode=400;msg.payload={error:"comando invalido",validos:COMANDOS};return [null,msg];}
+var out={topic:"nodealert/"+nid+"/commands",payload:cmd,qos:1,retain:false};
+msg.statusCode=202;msg.payload={enviado:cmd,topico:out.topic};
+return [out,msg];`, Z.api);
+  fn.outputs = 2;
+  const mqtt = node("mqtt out", { z: Z.api, name: "Send command", topic: "", qos: "1", retain: "false", broker: BR });
+  delete mqtt.wires;
+  const hres = node("http response", { z: Z.api, name: "", statusCode: "", headers: {}, wires: [[]] });
+  [hin, fn, mqtt, hres].forEach(n => F.push(n));
+  hin.wires = [[fn.id]];
+  fn.wires = [[mqtt.id], [hres.id]];
+}
+fs.writeFileSync(__dirname + "/nodered/data/flows.json", JSON.stringify(F, null, 2));
+console.log("OK —", F.length, "nodes generated in", Object.keys(Z).length, "flows");
+‎raspberry/README.md‎
++151
+Lines changed: 151 additions & 0 deletions
+
+
+Original file line number	Diff line number	Diff line change
+# Backend — Raspberry Pi (broker MQTT + Node-RED)
+Recibe la telemetría del nodo ESP32 por MQTT, la guarda en SQLite y la expone por una API
+REST que usa el dashboard (`frontend/`). También reenvía al nodo los comandos que se mandan
+desde el dashboard.
+```
+ESP32 (o simulator.py) ──MQTT──► Mosquitto :1883 ──► Node-RED :1880 ──► SQLite (nodered.db)
+        ▲                                               │
+        └──────── nodealert/<id>/commands ◄─────────────┤ API REST /api/...
+                                                        ▼
+                                          frontend (nginx :3001)
+```
+## Servicios (`docker-compose.yml`)
+| Servicio | Imagen | Puerto | Qué hace |
+|---|---|---|---|
+| `mosquitto` | `eclipse-mosquitto:2.0.20` | 1883 | Broker MQTT con usuario y clave obligatorios y ACL por usuario |
+| `nodered` | `nodered/node-red:4.1.1` + `node-red-node-sqlite@2.0.1` | 1880 | Procesa la telemetría, base de datos y API REST |
+| `frontend` | ver `frontend/README.md` | 3001 | Dashboard web |
+## Contrato MQTT
+| Tópico | Sentido | QoS | Formato |
+|---|---|---|---|
+| `nodealert/<device_id>/telemetry` | ESP32 → broker → Node-RED | 1 | JSON (abajo) |
+| `nodealert/<device_id>/commands` | Node-RED → broker → ESP32 | 1 | texto plano |
+Telemetría (cada 60 s y apenas cambia la presencia o el relé):
+```json
+{"device_id":"nodealert-luz01","presencia":1,"luz_ventana_lx":145.2,
+ "luz_aula_lx":89.6,"temp_c":24.1,"humedad_pct":55.3,"rele_canal1":0}
+```
+| Campo | Tipo | Significado | Si el sensor falla |
+|---|---|---|---|
+| `device_id` | texto | Identificador del nodo | siempre está |
+| `presencia` | 0/1 | 1 = sistema activo (hubo gente en los últimos 300 s) | se omite si el radar LD2420 no da datos |
+| `luz_ventana_lx` | número | BH1750 de la ventana (lux) | se omite |
+| `luz_aula_lx` | número | BH1750 del aula (lux) | se omite |
+| `temp_c`, `humedad_pct` | número | SHT30 | se omiten los dos |
+| `rele_canal1` | 0/1 | Estado del relé de las luces | siempre está |
+Node-RED guarda los campos que faltan como `NULL` (nunca inventa un valor). Descarta (con un aviso en el log) los mensajes que no son JSON o cuyo
+`device_id` no es válido.
+Comandos aceptados: `RELE_ON`, `RELE_OFF` (pasan el nodo a modo manual), `AUTO` (vuelve al
+modo automático), `REBOOT`, `LED_ON`, `LED_OFF`, `BUZZER_ON`, `BUZZER_OFF` (estos cuatro se
+aceptan sin efecto en esta versión del hardware).
+Usuarios del broker (permisos en `mqtt/aclfile`):
+| Usuario | Lo usa | Puede |
+|---|---|---|
+| `nodealert` | Node-RED | leer `+/telemetry`, escribir `+/commands` |
+| `nodealert_esp32` | firmware y `simulator.py` | escribir `+/telemetry`, leer `+/commands` |
+## API REST (Node-RED, puerto 1880)
+| Método | Endpoint | Respuesta |
+|---|---|---|
+| GET | `/api/health` | `{"status":"ok",...}` |
+| GET | `/api/nodes` | Lista de nodos |
+| POST | `/api/nodes` | Registra un nodo (`{"node_id","name"}`) |
+| GET / DELETE | `/api/nodes/:node_id` | Ver / borrar un nodo |
+| GET | `/api/telemetry/latest` | Última lectura de cada nodo |
+| GET | `/api/telemetry/:node_id?limit=N` | Historial (N entero de 1 a 1000) |
+| GET | `/api/telemetry/averages` | Promedios |
+| POST | `/api/nodes/:node_id/command` | `{"command":"RELE_ON"}` → **202** y lo publica por MQTT |
+| GET / POST | `/api/nodes/:node_id/config` | Configuración guardada en la base (el firmware no la lee) |
+Validación: `node_id` tiene que ser letras, números, `-` o `_` (máximo 64); un comando fuera
+de la lista o un `limit` inválido devuelven **400** con el motivo. Así no se pueden inyectar
+consultas SQL ni publicar en tópicos arbitrarios.
+## Cómo levantarlo
+Requisitos: Docker Engine con Docker Compose v2.
+```bash
+cd raspberry
+cp .env.example .env      # y cambiar las dos claves
+docker compose up -d --build
+docker compose ps         # los tres servicios "running"
+curl http://localhost:1880/api/health
+```
+- `MQTT_ESP32_PASS` tiene que ser igual a `MQTT_PASS` en
+  `firmware/control-luz/main/config_local.h`.
+- Si falta una clave en `.env`, `docker compose` no arranca y dice cuál falta.
+- Las claves no están en ningún archivo del repo: Mosquitto crea los usuarios al arrancar
+  (`mqtt/entrypoint.sh`) y Node-RED escribe su `flows_cred.json` al arrancar
+  (`nodered/start.sh`). `.env`, `flows_cred.json` y la base no se suben (`.gitignore`).
+## Probar sin hardware: `simulator.py`
+Simula el nodo ESP32 con el mismo contrato que el firmware: mismo tópico, mismas claves JSON,
+QoS 1, la misma regla de luz que `firmware/control-luz/main/regla_luz.h` (umbrales 60/100 lx,
+debounce de 2 s, reposo tras 300 s sin gente), responde a los comandos y simula fallas de
+sensores omitiendo los campos igual que el firmware.
+Requiere Python 3.9 o superior.
+```bash
+cd raspberry
+python3 -m venv .venv && . .venv/bin/activate     # Windows: .venv\Scripts\activate
+pip install -r requirements.txt                    # paho-mqtt 2.1.0
+export MQTT_ESP32_PASS=<la clave de .env>          # Windows: set MQTT_ESP32_PASS=...
+python simulator.py --broker localhost
+```
+Opciones útiles para una demo rápida:
+```bash
+python simulator.py --intervalo 5 --delay-off 20 --fail-rate 0.3 --ciclo-luz 60
+```
+| Opción | Default | Qué cambia |
+|---|---|---|
+| `--intervalo` | 60 | segundos entre publicaciones periódicas |
+| `--delay-off` | 300 | segundos sin presencia hasta el reposo |
+| `--fail-rate` | 0.05 | probabilidad de falla de cada sensor por lectura |
+| `--prob-cambio-presencia` | 0.02 | probabilidad por segundo de que entre o salga alguien |
+| `--ciclo-luz` | 600 | período del ciclo de luz natural simulado |
+| `--device-id` | `nodealert-luz01` | id del nodo |
+| `--duracion` | 0 (infinito) | segundos de simulación |
+Prueba de punta a punta:
+1. Con el simulador corriendo, `curl http://localhost:1880/api/telemetry/latest` muestra la
+   última lectura (los sensores que "fallaron" aparecen como `null`).
+2. `curl -X POST -H "Content-Type: application/json" -d '{"command":"RELE_ON"}'
+   http://localhost:1880/api/nodes/nodealert-luz01/command` → 202; el simulador imprime
+   `Comando recibido: RELE_ON` y la siguiente telemetría trae `"rele_canal1":1`.
+3. Con `{"command":"AUTO"}` vuelve al modo automático.
+4. Con `{"command":"CUALQUIERA"}` la API responde 400 y no publica nada.
+## Archivos
+| Archivo | Para qué |
+|---|---|
+| `docker-compose.yml` | Los tres servicios, con las claves tomadas de `.env` |
+| `.env.example` | Plantilla de `.env` |
+| `mqtt/` | Imagen de Mosquitto: configuración, ACL y creación de usuarios |
+| `nodered/Dockerfile`, `nodered/start.sh` | Imagen de Node-RED con versión fija y carga de credenciales |
+| `nodered/data/settings.js` | Configuración de Node-RED |
+| `nodered/data/flows.json` | Flujos (generados, no editar a mano) |
+| `generate-flows.js` | Genera `flows.json`: `node generate-flows.js` |
+| `simulator.py`, `requirements.txt` | Simulador del nodo ESP32 |
+‎raspberry/requirements.txt‎
++1
+Lines changed: 1 addition & 0 deletions
+‎raspberry/simulator.py‎
++231
+Lines changed: 231 additions & 0 deletions
+Original file line number	Diff line number	Diff line change
+#!/usr/bin/env python3
+"""
+Simulador del nodo ESP32-C3 (firmware control-luz) para NodeAlert IoT.
+Publica y escucha EXACTAMENTE lo mismo que el firmware real
+(firmware/control-luz/main/main.c), para probar el contrato MQTT sin hardware:
+  Publica   nodealert/<device_id>/telemetry   QoS 1, sin retain, JSON:
+            {"device_id", "presencia", "luz_ventana_lx", "luz_aula_lx",
+             "temp_c", "humedad_pct", "rele_canal1"}
+            - cada --intervalo segundos y apenas cambia la presencia o el rele;
+            - si un sensor falla, su campo NO se manda (como el firmware):
+              radar sin datos -> sin "presencia"; BH1750 -> sin su "luz_*";
+              SHT30 -> sin "temp_c" ni "humedad_pct".
+  Escucha   nodealert/<device_id>/commands    QoS 1, texto plano:
+            RELE_ON / RELE_OFF (modo manual), AUTO, REBOOT, LED_ON, LED_OFF,
+            BUZZER_ON, BUZZER_OFF (aceptados sin efecto); cualquier otro se
+            registra como "Comando desconocido", igual que el firmware.
+La luz se decide con la misma regla que firmware/control-luz/main/regla_luz.h
+(umbrales 60/100 lx, debounce de 2 s, reposo tras --delay-off sin presencia).
+Uso:
+  pip install -r requirements.txt
+  python simulator.py --broker localhost --password <MQTT_ESP32_PASS de .env>
+  (o exportar MQTT_ESP32_PASS y omitir --password)
+"""
+import argparse
+import json
+import math
+import os
+import random
+import sys
+import time
+import paho.mqtt.client as mqtt
+UMBRAL_BAJO_LX = 60       # UMBRAL_BAJO_DEFECTO del firmware
+UMBRAL_ALTO_LX = 100      # UMBRAL_ALTO_DEFECTO del firmware
+DEBOUNCE_S = 2.0          # DEBOUNCE_MS del firmware
+COMANDOS_SIN_EFECTO = {"LED_ON", "LED_OFF", "BUZZER_ON", "BUZZER_OFF"}
+def regla_deseado(sistema_activo, ok_ventana, lux_ventana, ok_aula, lux_aula,
+                  actual, umbral_bajo=UMBRAL_BAJO_LX, umbral_alto=UMBRAL_ALTO_LX):
+    """Copia de regla_deseado() de regla_luz.h."""
+    if not sistema_activo:
+        return False
+    if ok_ventana:
+        if lux_ventana > umbral_alto:
+            return False
+        if lux_ventana >= umbral_bajo:
+            return actual
+        if actual:
+            return True
+        if not ok_aula:
+            return True
+        return lux_aula < umbral_alto
+    if ok_aula and not actual and lux_aula < umbral_bajo:
+        return True
+    return actual
+class NodoSimulado:
+    def __init__(self, args):
+        self.args = args
+        self.topic_tel = f"nodealert/{args.device_id}/telemetry"
+        self.topic_cmd = f"nodealert/{args.device_id}/commands"
+        self.t0 = time.monotonic()
+        self.reiniciar_estado()
+    def reiniciar_estado(self):
+        ahora = time.monotonic()
+        self.luz_encendida = False
+        self.manual = False
+        self.candidato = False
+        self.desde_candidato = ahora
+        self.sistema_activo = True            # el firmware arranca activo
+        self.ultima_presencia = ahora
+        self.persona = False
+        self.publicar_ya = True
+        self.ultima_publicacion = 0.0
+    # ---------- "sensores" ----------
+    def leer_sensores(self):
+        a = self.args
+        t = time.monotonic() - self.t0
+        # Luz natural: ciclo lento (periodo --ciclo-luz s) entre 0 y ~300 lx
+        natural = max(0.0, 150 + 150 * math.sin(2 * math.pi * t / a.ciclo_luz))
+        lux_ventana = natural + random.uniform(-5, 5)
+        # El sensor del aula ve la luz natural atenuada + el foco si esta prendido
+        lux_aula = 0.6 * natural + (180 if self.luz_encendida else 0) + random.uniform(-5, 5)
+        # Presencia: alguien entra o sale de vez en cuando
+        if random.random() < a.prob_cambio_presencia:
+            self.persona = not self.persona
+        lect = {
+            "radar_ok": random.random() >= a.fail_rate,
+            "ventana_ok": random.random() >= a.fail_rate,
+            "aula_ok": random.random() >= a.fail_rate,
+            "sht_ok": random.random() >= a.fail_rate,
+            "lux_ventana": round(max(0.0, lux_ventana), 1),
+            "lux_aula": round(max(0.0, lux_aula), 1),
+            "temp_c": round(24 + 2 * math.sin(2 * math.pi * t / 600) + random.uniform(-0.3, 0.3), 1),
+            "humedad_pct": round(55 + 5 * math.sin(2 * math.pi * t / 900) + random.uniform(-1, 1), 1),
+        }
+        return lect
+    # ---------- logica (igual que el loop del firmware) ----------
+    def paso(self, lect):
+        ahora = time.monotonic()
+        if lect["radar_ok"] and self.persona:
+            self.ultima_presencia = ahora
+        activo_antes = self.sistema_activo
+        self.sistema_activo = (ahora - self.ultima_presencia) <= self.args.delay_off
+        if self.sistema_activo != activo_antes:
+            self.publicar_ya = True
+            print(">> Hay gente: sistema ACTIVO" if self.sistema_activo else ">> Sin gente: REPOSO")
+        if self.manual:
+            return
+        deseado = regla_deseado(self.sistema_activo, lect["ventana_ok"], lect["lux_ventana"],
+                                lect["aula_ok"], lect["lux_aula"], self.luz_encendida)
+        if deseado == self.luz_encendida:
+            self.candidato = deseado
+        elif deseado != self.candidato:
+            self.candidato = deseado
+            self.desde_candidato = ahora
+        elif ahora - self.desde_candidato >= DEBOUNCE_S:
+            self.luz_encendida = deseado
+            self.publicar_ya = True
+            print(f">> RELE {'ON' if deseado else 'off'}")
+    def armar_payload(self, lect):
+        p = {"device_id": self.args.device_id}
+        if lect["radar_ok"]:
+            p["presencia"] = 1 if self.sistema_activo else 0
+        if lect["ventana_ok"]:
+            p["luz_ventana_lx"] = lect["lux_ventana"]
+        if lect["aula_ok"]:
+            p["luz_aula_lx"] = lect["lux_aula"]
+        if lect["sht_ok"]:
+            p["temp_c"] = lect["temp_c"]
+            p["humedad_pct"] = lect["humedad_pct"]
+        p["rele_canal1"] = 1 if self.luz_encendida else 0
+        return p
+    # ---------- comandos ----------
+    def on_message(self, client, userdata, msg):
+        cmd = msg.payload.decode("utf-8", errors="replace").strip()
+        print(f"Comando recibido: {cmd}")
+        if cmd == "REBOOT":
+            print(">> Reinicio simulado")
+            self.reiniciar_estado()
+        elif cmd == "RELE_ON":
+            self.manual, self.luz_encendida, self.publicar_ya = True, True, True
+        elif cmd == "RELE_OFF":
+            self.manual, self.luz_encendida, self.publicar_ya = True, False, True
+        elif cmd == "AUTO":
+            self.manual, self.publicar_ya = False, True
+            print("Modo automatico reanudado")
+        elif cmd in COMANDOS_SIN_EFECTO:
+            pass
+        else:
+            print(f"Comando desconocido: {cmd}")
+def main():
+    ap = argparse.ArgumentParser(description="Simulador del nodo ESP32 control-luz")
+    ap.add_argument("--broker", default="localhost")
+    ap.add_argument("--port", type=int, default=1883)
+    ap.add_argument("--user", default="nodealert_esp32")
+    ap.add_argument("--password", default=os.environ.get("MQTT_ESP32_PASS"),
+                    help="clave del usuario nodealert_esp32 (default: variable MQTT_ESP32_PASS)")
+    ap.add_argument("--device-id", default="nodealert-luz01")
+    ap.add_argument("--intervalo", type=float, default=60.0,
+                    help="segundos entre publicaciones periodicas (firmware: 60)")
+    ap.add_argument("--delay-off", type=float, default=300.0,
+                    help="segundos sin presencia hasta el reposo (firmware: 300)")
+    ap.add_argument("--fail-rate", type=float, default=0.05,
+                    help="probabilidad de que cada sensor falle en una lectura (0 a 1)")
+    ap.add_argument("--prob-cambio-presencia", type=float, default=0.02,
+                    help="probabilidad por segundo de que entre o salga alguien")
+    ap.add_argument("--ciclo-luz", type=float, default=600.0,
+                    help="periodo en segundos del ciclo de luz natural simulado")
+    ap.add_argument("--duracion", type=float, default=0, help="segundos de simulacion (0 = infinito)")
+    args = ap.parse_args()
+    if not args.password:
+        sys.exit("Falta la clave: --password o variable MQTT_ESP32_PASS (ver raspberry/.env)")
+    nodo = NodoSimulado(args)
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=f"sim-{args.device_id}")
+    client.username_pw_set(args.user, args.password)
+    client.reconnect_delay_set(min_delay=1, max_delay=30)   # backoff como un cliente real
+    def on_connect(c, userdata, flags, reason_code, properties):
+        if reason_code.is_failure:
+            print(f"Conexion rechazada por el broker: {reason_code}")
+            return
+        print(f"Conectado a {args.broker}:{args.port}; escuchando {nodo.topic_cmd}")
+        c.subscribe(nodo.topic_cmd, qos=1)
+        nodo.publicar_ya = True
+    client.on_connect = on_connect
+    client.on_message = nodo.on_message
+    client.connect_async(args.broker, args.port, keepalive=60)
+    client.loop_start()
+    fin = time.monotonic() + args.duracion if args.duracion > 0 else None
+    try:
+        while fin is None or time.monotonic() < fin:
+            lect = nodo.leer_sensores()
+            nodo.paso(lect)
+            vencio = time.monotonic() - nodo.ultima_publicacion >= args.intervalo
+            if client.is_connected() and (nodo.publicar_ya or vencio):
+                payload = nodo.armar_payload(lect)
+                client.publish(nodo.topic_tel, json.dumps(payload, separators=(",", ":")), qos=1, retain=False)
+                print(f"-> {nodo.topic_tel} {payload}")
+                nodo.ultima_publicacion = time.monotonic()
+                nodo.publicar_ya = False
+            time.sleep(1.0)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        client.loop_stop()
+        client.disconnect()
+if __name__ == "__main__":
+    main()
+‎.gitattributes‎
++3
+Lines changed: 3 additions & 0 deletions
+Original file line number	Diff line number	Diff line change
+# Los scripts que corren dentro de los contenedores Linux tienen que quedar con LF,
+# aunque el repo se clone en Windows
+*.sh text eol=lf
+‎.gitignore‎
++18
+-3
+Lines changed: 18 additions & 3 deletions
+Original file line number	Original file line	Diff line number	Diff line change
+# Dependencias y compilados
+node_modules/
+node_modules/
+dist/
+dist/
+build/
+build/
+*.db
+managed_components/
+firmware/control-luz/sdkconfig.old
+firmware/control-luz/tests/test_regla
+__pycache__/
+.venv/
+# Secretos y datos locales: NUNCA al repo
+.env
+firmware/control-luz/main/config_local.h
+firmware/control-luz/main/config_local.h
+raspberry/nodered/data/flows_cred.json
+raspberry/nodered/data/flows_cred.json
+firmware/control-luz/main/config_local.h
+raspberry/nodered/data/.config.*
+firmware/control-luz/tests/test_regla
+raspberry/nodered/data/.flows*.backup
+raspberry/nodered/data/lib/
+*.db
+raspberry/mqtt/data/
+# Editores
+.vscode/
+.idea/
+GIF of two octocats high fiving each other
+You made it to the end!

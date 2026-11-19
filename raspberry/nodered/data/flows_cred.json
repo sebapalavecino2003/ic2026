@@ -1,6 +1,1 @@
-{
-  "br_main": {
-    "user": "nodealert",
-    "password": "CAMBIAR_PASSWORD_NODEALERT"
-  }
-}
+{"br_main":{"user":"nodealert","password":"test_password"}}

@@ -6,6 +6,9 @@ services:
       - "1883:1883"
     volumes:
       - ./mqtt/data:/mosquitto/data
+    environment:
+      - MQTT_NODERED_PASS=${MQTT_NODERED_PASS:?Falta MQTT_NODERED_PASS en raspberry/.env (copiar .env.example)}
+      - MQTT_ESP32_PASS=${MQTT_ESP32_PASS:?Falta MQTT_ESP32_PASS en raspberry/.env (copiar .env.example)}
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost 1883"]
       interval: 10s
@@ -14,7 +17,6 @@ services:
     networks:
       - nodealert-net
     restart: unless-stopped
-
   nodered:
     build: ./nodered
     container_name: nodealert-nodered
@@ -24,13 +26,13 @@ services:
       - ./nodered/data:/data
     environment:
       - TZ=America/Argentina/Buenos_Aires
+      - MQTT_NODERED_PASS=${MQTT_NODERED_PASS:?Falta MQTT_NODERED_PASS en raspberry/.env (copiar .env.example)}
     depends_on:
       mosquitto:
         condition: service_healthy
     networks:
       - nodealert-net
     restart: unless-stopped
-
   frontend:
     build: ./frontend
     container_name: nodealert-frontend
@@ -44,7 +46,6 @@ services:
     networks:
       - nodealert-net
     restart: unless-stopped
-
 networks:
   nodealert-net:
     driver: bridge

@@ -48,7 +48,9 @@ F.push(node("mqtt-broker", {
   birthTopic: "", birthQos: "0", birthPayload: "",
   closeTopic: "", closeQos: "0", closePayload: "",
   willTopic: "", willQos: "0", willPayload: "",
-  credentials: false, username: "nodealert", password: "CAMBIAR_PASSWORD_NODEALERT"
+  willTopic: "", willQos: "0", willPayload: ""
+  // Usuario y clave: NO van aca. nodered/start.sh los escribe en
+  // /data/flows_cred.json al arrancar, desde las variables de raspberry/.env.
 }));
 
 // ========== TAB 0: Init DB ==========

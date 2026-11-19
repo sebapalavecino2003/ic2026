@@ -1,7 +1,8 @@
 #!/bin/sh
-# Create password file if not exists
 if [ ! -f /mosquitto/data/passwordfile ]; then
-    mosquitto_passwd -b -c /mosquitto/data/passwordfile nodealert CAMBIAR_PASSWORD_NODEALERT
-    mosquitto_passwd -b /mosquitto/data/passwordfile nodealert_esp32 CAMBIAR_PASSWORD_ESP32
+    umask 022
+    mosquitto_passwd -b -c /mosquitto/data/passwordfile nodealert "${MQTT_NODERED_PASS}"
+    mosquitto_passwd -b /mosquitto/data/passwordfile nodealert_esp32 "${MQTT_ESP32_PASS}"
+    chmod 0644 /mosquitto/data/passwordfile
 fi
 exec "$@"

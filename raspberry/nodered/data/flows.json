@@ -27,10 +27,7 @@
     "closePayload": "",
     "willTopic": "",
     "willQos": "0",
-    "willPayload": "",
-    "credentials": false,
-    "username": "nodealert",
-    "password": "CAMBIAR_PASSWORD_NODEALERT"
+    "willPayload": ""
   },
   {
     "id": "n0003",

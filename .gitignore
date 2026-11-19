@@ -3,4 +3,5 @@ dist/
 build/
 managed_components/
 *.db
+passwordfile
 firmware/control-luz/main/config_local.h
